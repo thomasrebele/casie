@@ -2,8 +2,9 @@ package tpt.dbweb.cat;
 
 import java.util.Iterator;
 
-import tpt.dbweb.cat.datatypes.iterators.PeekIterator;
-import tpt.dbweb.cat.datatypes.iterators.PeekIterator.SimplePeekIterator;
+import javatools.datatypes.PeekIterator;
+import javatools.datatypes.PeekIterator.SimplePeekIterator;
+import javatools.datatypes.Trie;
 
 public class Utility {
 
@@ -43,6 +44,24 @@ public class Utility {
       return it.peek();
     }
     return finalValue;
+  }
+
+  public static String findLongestPrefix(String text, String search) {
+    Trie t = new Trie();
+    for (int i = 0; i < search.length(); i++) {
+      t.add(search.substring(0, i));
+    }
+
+    int maxi = 0, maxlen = 0;
+    for (int i = 0; i < text.length(); i++) {
+      int len = t.containedLength(search, i);
+      if (len > maxlen) {
+        maxlen = len;
+        maxi = i;
+      }
+    }
+
+    return text.substring(maxi, maxi + maxlen);
   }
 
 }
