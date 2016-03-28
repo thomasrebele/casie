@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import tpt.dbweb.cat.Utility;
 import tpt.dbweb.cat.datatypes.EntityMention;
+import tpt.dbweb.cat.tools.Utility;
 
 /**
  * Data class storing a view of a slice of two or more tagged texts.

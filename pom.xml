@@ -7,6 +7,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
+		<jackson.version>2.7.0</jackson.version>
 	</properties>
 
 	<dependencies>
@@ -33,7 +34,24 @@
 			<artifactId>log4j-slf4j-impl</artifactId>
 			<version>2.4.1</version>
 		</dependency>
-		
+
+		<!-- JSON parsing -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+
 		<!-- utils -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>

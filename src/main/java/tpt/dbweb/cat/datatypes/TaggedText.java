@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import tpt.dbweb.cat.Utility;
+import tpt.dbweb.cat.tools.Utility;
 
 /**
  * A text, where text spans can get tagged with entities.

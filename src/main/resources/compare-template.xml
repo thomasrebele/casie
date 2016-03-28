@@ -1,0 +1,1027 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xml-stylesheet type="text/xml" href="#stylesheet"?>
+<!DOCTYPE doc [
+<!ATTLIST xsl:stylesheet id	ID	#REQUIRED>
+<!ATTLIST xsl:stylesheet version	CDATA	#IMPLIED>
+<!ATTLIST xsl:stylesheet xmlns:xsl	CDATA	#IMPLIED>
+<!ATTLIST xsl:stylesheet xmlns	CDATA	#IMPLIED>
+]>
+<articles>
+	<xsl:stylesheet id="stylesheet"
+		version="18.0"
+		xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+		xmlns="http://www.w3.org/1999/xhtml"
+		>
+		<!-- place any xsl:import elements here -->
+		<xsl:template match="xsl:stylesheet" />
+		<xsl:output method="html" indent="yes" version="5.0" encoding="UTF-8" doctype-public=""/>
+
+		<!-- html skeleton -->
+		<xsl:template match="/">
+			<xsl:variable name="color1">#e68a2f</xsl:variable>
+			<xsl:variable name="color2">#2f31e6</xsl:variable>
+			<xsl:variable name="color1and2">#000000</xsl:variable>
+			
+			<html xmlns:x="http://telecom-paristech.fr/namespace/">
+				<head>
+					<title>Annotations</title> <!-- TODO: change name -->
+					<meta charset="UTF-8" />
+					<style>
+						.stack {display: inline-flex; flex-direction: column;}
+						span { white-space:nowrap; }
+						
+						/* general style for chain numbers, see style with id "chains" further below */
+						.supsub {display:none; }
+						.supsub span {font-size: 0.6em; display:inline; position:relative;}
+						.superscript { color: darkseagreen; top: -1.5ex; }
+						[data-index="1"] .subscript { color: <xsl:value-of select="$color1"/> ; top: -1.75ex; }
+						[data-index="2"] .subscript { color: <xsl:value-of select="$color2"/>; top: -1.75ex; }
+						.highlight  { text-shadow: .5px 0px .0px, -.5px 0px .0px;} 
+						
+						/* combine elements according to split attribute */
+						[data-split="true"] .combined { visibility: hidden; }
+						[data-split="false"] .tagger { visibility: hidden; }
+						[data-split="false"] .combined { visibility: visible; }
+						[data-split="false"]:hover .combined { visibility: hidden;  }
+						[data-split="false"]:hover .tagger { visibility: visible; }
+
+						.highlight .combined { visibility: hidden; }
+						.highlight .tagger { visibility: visible; }
+
+						table.overlay { display: inline-block; vertical-align: top; }
+						.combined, .combined td { height: 0px; }
+						.combined td .collapse {
+							height: 0px;
+							display: block;
+						}
+
+						table.overlay,table.overlay tr,table.overlay td {
+							padding: 0px;
+							border: 0px;
+							margin: 0px;
+							border-spacing: 0px;
+						}
+
+						table.overlay td:nth-child(1) { text-align: right; }
+						table.overlay td:nth-child(2) { text-align: left; }
+						table.overlay td:nth-child(4) { text-align: left; }
+						
+						.combined, [data-index] { color: grey; }
+						.symbol, .symbols { display: none; }
+
+  						 .left{
+				          display: block;
+        				  float:left; 
+     					  width:50%;
+					    }
+					</style>
+					<!-- container for tagger visibility rules -->
+					<style>
+						styleid { content: 'taggerVisibility'; }
+						/*hide taggers by adding a rule like [data-index="1"] { display: none}, show them by removing that rule */
+					</style>
+					<style>
+						styleid { content: 'coloring:tagger'; }
+						/*.tagger { font-weight: bold; }*/
+						[data-split="false"] .highlight .tagger:first-child { color: <xsl:value-of select="$color1and2"/>; text-shadow: .5px 0px .0px, -.5px 0px .0px;} /* color1and2 */
+						[data-split="false"]:hover .highlight .tagger:first-child { color: <xsl:value-of select="$color1"/>; }
+						
+						[data-index="1"]:not([data-eval=""]).highlight { color: <xsl:value-of select="$color1"/>; }
+						[data-index="2"]:not([data-eval=""]).highlight { color: <xsl:value-of select="$color2"/>; }
+					</style>
+					<style>
+						styleid { content: 'coloring:noAnno'; }
+						[data-index].highlight  { display: none; }
+						.combined  { color:DarkSlateBlue;}
+						[data-split] .combined { visibility: visible; }
+						.symbol, .symbols { display: none; }
+					</style>
+					<style>
+						styleid { content: 'coloring:eval'; }
+						[data-index="1"].highlight .symbol { color: <xsl:value-of select="$color1"/>; }
+						[data-index="2"].highlight .symbol { color: <xsl:value-of select="$color2"/>; }
+						/* styles for evaluation */
+						[data-eval="correct"].highlight { color: green; }
+						[data-eval="toomuch"].highlight { color: pink; }
+						[data-eval="forgot"].highlight { color: DarkSlateBlue; }
+						[data-eval="wrong"].highlight { color: red; }
+					</style>
+					
+					<style>
+						styleid { content: 'coloring:diff'; }
+						[data-split="false"] .highlight.tagger { color: green; }
+						[data-split="true"] .highlight.tagger { color: red; }
+					</style>
+
+					<style>
+						styleid { content: 'symbols'; }
+						.symbols { display: initial; }
+						.symbol { display: initial; position: relative; bottom: 1ex; font-size: small; }
+						/*[data-split="false"] .symbols { position: relative; }
+						[data-split="false"] .symbols .single-symbol { position: absolute; left: 0px; }*/
+					</style>
+	
+					<style>
+						styleid { content: 'chains'; }
+						.supsub {display:inline-flex; flex-direction: column;
+						vertical-align:middle; height:1ex; user-select: none;
+						-moz-user-select: none; -khtml-user-select: none; }
+					</style>
+				
+					<style>
+						[data-eval=""] { color: black; }
+						
+						body {
+							height: 100vh;
+						}
+						#mentionTable{
+						margin-right: 3px;
+						
+						}
+						#content {
+							/* margin-right: 10vw; */
+							margin-left: 1vw; 
+							border-style: none;
+							height: 100%;
+							overflow: auto;
+						}
+						#eval {
+							/*margin-right: 10vw;
+							height: 25%;
+							overflow: auto;*/
+						}
+						#menuOpt {	
+							height:8%;
+							overflow: auto;
+						}
+						#wrapper {	
+							left:0px;
+							margin-right: 17vw;
+							/*margin-right: 15vw;*/
+							height: 100%;
+							overflow: auto;
+						}
+						#wrapper2 {	
+							margin-right: 5px;
+							position: fixed;
+							top:5.5vw;	
+							right:0px;
+							/*height:100vh;*/
+							width: 17vw;
+						}
+
+						#taggers {
+						/*	margin-right: 2px;
+							position: fixed;
+							top:5.5vw;
+							left:3px;
+							right:0px;
+							/*height:100vh;*/
+							width: 15vw;*/
+						}
+						#control {
+							position: fixed;
+							top:3.5vw;
+							right:0px;
+							height: 100%;
+						} 
+
+						/*style for menu navigator*/
+						ul {
+							list-style-type: none;
+							margin: 0;
+							padding: 0;
+							overflow: hidden;
+							background-color: #333;
+						}
+					 
+
+						li {
+							float: left;
+						}
+
+						li a, .dropbtn {
+							display: inline-block;
+							color: white;
+							text-align: center;
+							padding: 14px 16px;
+							text-decoration: none;
+						}
+
+						li a:hover, .dropdown:hover .dropbtn {
+							background-color: red;
+						}
+
+						li.dropdown {
+							display: inline-block;
+						}
+						/*dropdown for document menu button*/
+						.dropdown-content {
+							display: none;
+							position: absolute;
+							background-color: #f9f9f9;
+							min-width: 160px;
+							box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+							z-index: 1;
+						}
+
+						.dropdown-content a {
+							color: black;
+							padding: 12px 16px;
+							text-decoration: none;
+							display: block;
+							text-align: left;
+						}
+
+						.dropdown-content a:hover {background-color: #f1f1f1}
+
+						.show {display:block;}
+
+						select.menu {
+							width: 94%;
+							padding: 3%;
+							border:0px;
+							outline:0px;
+							font:inherit;
+						}
+						select.metric {
+							border:0px;
+							outline:0px;
+							font:inherit;
+						}
+
+						table, th, td {
+							border: 1px solid black;
+							border-collapse: collapse;
+							text-align: center;
+						}
+						th, td {
+							padding: 5px;
+						}
+					</style>
+
+					<script type="text/javascript">
+						<![CDATA[
+							// ADD CODE INSIDE NEXT IF BLOCK
+							function isUndefined(v) {
+								return typeof v === "undefined";
+							}
+							// execute only once, see mozilla-bug-380828
+							if(!isUndefined(document.getElementsByName)) {
+
+								/** Take Json output from XML and collapse it, i.e. make attributes and children elements accessible by r["name"] and r["name"][childindex] */
+								function collapseXMLJson(o) {
+									var r = {};
+									if(!isUndefined(o["attr"])) {
+										var keys = Object.keys(o["attr"]);
+										for(var i=0; i<keys.length; i++) {
+											r[keys[i]] = o["attr"][keys[i]];
+										}
+									}
+									if(!isUndefined(o["children"])) {
+										var cs = o["children"];
+										for(var i=0; i<cs.length; i++) {
+											var name = cs[i]["name"];
+											if(isUndefined(r[name])) {
+												r[name] = new Array();
+											}
+											r[name].push(collapseXMLJson(cs[i]));
+										}
+									}
+									return r;
+								}
+
+								taggers = collapseXMLJson(]]><xsl:apply-templates select="articles/taggers" mode="js"/><![CDATA[)["tagger"];
+							}
+						]]>
+					</script>
+				</head>
+				<body>
+					
+					
+					<div id="wrapper">
+
+						<div  id="menuOpt">
+							<ul>
+
+						 		<li class="dropdown">
+							    <!-- <a href="javascript:void(0)" class="dropbtn" onclick="dropDown('documentButton')">Document</a>
+							    <div class="dropdown-content" id="documentButton">
+							       <select class='menu' id="optDoc" size="2" onchange="document.getElementById('content').onclick()"> 
+										<option value="allArticles" selected="true">All articles</option> 
+										<option value="onePerTime">One at a time</option> 
+									</select>				
+								</div> -->
+						 		</li>
+								<li class="dropdown" >
+								  	<a href="javascript:void(0)" id="modeMenu" class="dropbtn" onclick="dropDown('modeButton')">Mode</a>
+								    <div class="dropdown-content" id="modeButton">
+										<select class='menu' id="optColor" size="2" onchange="updateMode()"> 
+											<option value="tagger">tagger</option> 
+											<option value="eval" selected="true">evaluation</option> 
+									</select>		
+									</div>
+								</li>
+								
+								<li class="dropdown">
+								  	<a href="javascript:void(0)" class="dropbtn" onclick="dropDown('showButton')">Show</a>
+								    <div class="dropdown-content" id="showButton">
+									 	 <label><input id="showSymbols" type="checkbox" name="symbols"  onchange="cssStyle['symbols'].disabled = !this.checked; updateMode();"/>Symbols</label>
+									 <br/>
+									 	<label><input id="showChains" type="checkbox" name="chains" onchange="cssStyle['chains'].disabled = !this.checked; updateMode();"/>Entity numbers</label>
+									  </div>
+								</li>
+							</ul> 
+						</div>
+					
+						<div  id="content">
+							<xsl:apply-templates /> 
+						</div>
+					</div>
+					<div id="wrapper2">
+						<div >	
+								<h3 style="background-color: #333;color:white;"> Annotators </h3>
+							</div>
+						<div id="taggers" xmlns="http://www.w3.org/1999/xhtml">
+						</div>	
+						<div style='border-style: none;' >	
+							<div >	
+								<h3 style="background-color: #333;color:white;"> Evaluation </h3>
+							</div>
+							<div id="eval" >	
+								<div  id="evalTableSelection"> 
+									<div   id="selectDiv" >
+		 
+									</div>
+									<div  id="tableDiv"  >
+		    
+									</div>
+									
+								</div>
+								<!-- <div class="left" id="diagram">
+		  							<svg id="mySVG" height="240" width="500" xmlns="http://www.w3.org/2000/svg" >
+										<line class="default"  x1="100" y1="10" x2="100" y2="210" style="stroke:rgb(0,0,0);stroke-width:1" />
+										<line  class="default"  x1="100" y1="210" x2="300" y2="210" style="stroke:rgb(0,0,0);stroke-width:1" />
+										<text class="default" x="80" y="60" fill="black">P</text>
+										<text  class="default"  x="290" y="230" fill="black">R</text>
+									</svg>
+								</div> -->
+							</div>
+						</div>
+					</div>
+					
+					<script type="text/javascript">
+						<![CDATA[
+						// ADD CODE INSIDE NEXT IF BLOCK
+						function isUndefined(v) {
+							return typeof v === "undefined";
+						}
+						// execute only once, see mozilla-bug-380828
+						if(!isUndefined(document.getElementsByName)) {
+
+							var evalPerAnno = document.querySelectorAll("span.eval");
+							var metrics = new Array();
+							if(metrics.length==0){
+								for(var i=0;i<evalPerAnno.length;i++){
+									var anno=evalPerAnno[i].getAttribute("data-annotator");
+									var metric=evalPerAnno[i].getAttribute("data-name");
+									if(metrics.includes(metric)==false){
+										metrics.push(metric);
+									}
+								}
+							}
+
+							/** adapted from http://stackoverflow.com/a/19662291/1562506
+								usage example:
+								var img  = initElement(svg,'circle',{
+									cx:100, cy:150, r:22,
+									fill:'black'});
+							*/
+							function initElement( dad, name, attrs, text ){
+								var doc = dad.ownerDocument;
+								var svg = dad.ownerSVGElement || dad;
+								var ns = initElement.$NAMESPACES;
+								var defaultNS = svg.namespaceURI;
+								if (!ns){
+									ns = initElement.$NAMESPACES = {};
+									for (var a=svg.attributes,i=a.length;i--;) if (a[i].prefix=='xmlns') ns[a[i].localName] = a[i].value;
+								}
+								var p = name.split(':');
+								var el = p[1] ? doc.createElementNS(ns[p[0]],p[1]) : doc.createElementNS(defaultNS,name);
+								for (var a in attrs){
+									p = a.split(':');
+									if (p[1]) el.setAttributeNS(ns[p[0]],p[1],attrs[a]);
+									else      el.setAttributeNS(null,a,attrs[a]);
+								}
+								if (text) {
+									el.insertAdjacentHTML('beforeend', text);
+								}
+								return dad.appendChild(el);
+							}
+
+
+							function elementLabeling(label, forElementId, divId){
+								var newlabel = document.createElement("label");
+								newlabel.setAttribute("for",forElementId);
+								newlabel.innerHTML = label;
+								divId.appendChild(newlabel);
+							}
+							/*var selectElem = initElement(document.getElementById('selectDiv'),'select',{id:'metricsSel', class:'metric', onchange:'updateDiagram(this.value);fillEvalTable(this.value);'});*/
+							var selectElem = initElement(document.getElementById('selectDiv'),'select',{id:'metricsSel', class:'metric', onchange:'fillEvalTable(this.value);'});
+
+							/*To dynamically create the metrics select*/
+							for(var j=0;j<metrics.length;j++){
+								var option = initElement(selectElem,'option',{value: metrics[j]});
+								option.innerHTML=metrics[j];
+								 
+							}
+
+							/*To dynamically create the annotator checkboxes*/
+							for(var k=1;k<taggers.length;k++){
+								initElement(document.getElementById('taggers'),'input',{type:'checkbox', id:"checkTag"+taggers[k]["id"], name:'tagger'+taggers[k]["id"] ,value:"tagger"+taggers[k]["id"], onchange:"updateMode();", checked:'checked'});
+								elementLabeling("Anno "+taggers[k]["id"],"checkTag"+taggers[k]["id"],document.getElementById('taggers'));
+								if(k<taggers.length-1){
+									var br = document.createElement('br');
+									document.getElementById('taggers').appendChild(br);
+								}
+							}
+							
+							/* When the user clicks on the button, 
+							toggle between hiding and showing the dropdown content */
+							function dropDown(menuId) {
+								document.getElementById(menuId).classList.toggle("show");
+							}
+
+							// Close the dropdown menu if the user clicks outside of it
+							window.onclick = function(event) {
+							  if (!event.target.matches('.dropbtn')) {
+
+								var dropdowns = document.getElementsByClassName("dropdown-content");
+								var i;
+								for (i = 0; i < dropdowns.length; i++) {
+								  var openDropdown = dropdowns[i];
+								  if (openDropdown.classList.contains('show')) {
+									openDropdown.classList.remove('show');
+								  }
+								}
+							  }
+							 }
+
+							
+							
+							
+
+							function fillEvalTable(metric){
+								/*var evalPerAnno = document.querySelectorAll("span.eval");
+								if(evalPerAnno.length == 0) {
+									return;
+								}*/
+								var table = document.getElementById("evalTable");
+								var headerArray=["Annotator", "precision", "recall"];
+								if(document.getElementById("evalTable")!=null){
+ 									table.innerHTML = "";
+ 									var header = table.createTHead();
+									var row = header.insertRow(0);
+									for(i=0;i<headerArray.length;i++){
+										var cell = row.insertCell(i);
+										cell.innerHTML = "<b>"+headerArray[i] +"</b>";
+									}
+								}
+								
+								if(document.getElementById("evalTable")==null){
+									
+									
+									table=document.createElement("table");
+									table.setAttribute("id", "evalTable");	
+									document.getElementById("tableDiv").appendChild(table);
+									var header = table.createTHead();
+									var row = header.insertRow(0);
+									for(i=0;i<headerArray.length;i++){
+										var cell = row.insertCell(i);
+										cell.innerHTML = "<b>"+headerArray[i] +"</b>";
+									}
+
+								}
+								
+								for (var i=0;i<taggers.length;i++) {
+								 	var anno=taggers[i]["id"];
+								 	var row= table.insertRow(-1);
+									var annoCell = row.insertCell(0);
+									annoCell.innerHTML = "anno "+anno;
+									var precisionCell=null;
+									var recallCell=null;
+									 	for(var j=0;j<evalPerAnno.length;j++){
+											var evMap=evalPerAnno[j];			
+								 			if(evMap.getAttribute("data-annotator")==anno && evMap.getAttribute("data-name")==metric){
+										 		precisionCell= row.insertCell(1);
+												precisionCell.innerHTML = evMap.getAttribute("data-precision");
+												recallCell = row.insertCell(2);
+												recallCell.innerHTML = evMap.getAttribute("data-recall");
+								 			}
+								 		}
+								 	if(precisionCell== null && recallCell==null){
+								 		table.deleteRow(table.getElementsByTagName("TR").length-1);
+									}	
+								}
+							
+								var p = highlightCell(1);
+								var r = highlightCell(2);
+							}
+
+							function highlightCell(column){
+								var  max, rowNo = null;
+								var table = document.getElementById("evalTable");
+								var a = table.getElementsByTagName("TR");
+								for (var i=1; i<a.length; i++) {
+									var td = a[i].childNodes[column];
+									if(!isUndefined(td)) {
+										var val = td.innerHTML;
+										if (rowNo == null || val > max) {
+											max = val;
+											rowNo = i;
+										}
+									}
+								}
+								if(rowNo != null) {
+									var td = a[rowNo].childNodes[column];
+									td.style.backgroundColor = "yellow";
+								}
+							}
+
+							fillEvalTable(metrics[0]);
+							
+							function updateDiagram(metric){   
+								var svg =  document.getElementById('mySVG');
+								if(taggers.length==0 || metrics.length==0 ){
+									console.log("No annotators or metrics for evaluation!");
+								}
+								var childrenNodes = svg.childNodes;
+							
+								
+								for (var l=childrenNodes.length-1;l>=0;l--) {
+						
+							 		if(childrenNodes[l].classList.contains("default")){
+							 			continue;
+							 		}
+								  	svg.removeChild(childrenNodes[l]);
+							 		
+								}
+								
+								for (var i=0;i<taggers.length;i++) {
+								 	var anno=taggers[i]["id"];
+								 	var precision;
+								 	var recall;
+ 								 	for(var j=0;j<evalPerAnno.length;j++){
+
+										var evMap=evalPerAnno[j];
+										
+								 		if(evMap.getAttribute("data-annotator")==anno && evMap.getAttribute("data-name")==metric){
+								 			precision = evMap.getAttribute("data-precision");
+								 			recall = evMap.getAttribute("data-recall");
+								 		}
+								 	}
+								 	 
+								 	var precisionSVG=250-Number(precision)*20;
+								 	var recallSVG=100+Number(recall)*20;
+								 	 
+								 	var textSVG  = initElement(svg,'text',{x:precisionSVG, y:recallSVG, fill:'black', style:'font-size:100%', class:"new"});
+								 	textSVG.innerHTML=anno;
+								 	initElement(svg,'circle',{cx:precisionSVG, cy:recallSVG, r:1, fill:'black'});
+
+								}
+							} 
+							/*updateDiagram(metrics[0]);*/
+
+							var markSpans = document.querySelectorAll("span.mark");
+							var taggerSpans = document.querySelectorAll("tr.tagger, tr.combined");
+
+							var entityToElements = new Array();
+							
+							/* fetch named css styles and store them in a map */
+							var cssStyle = new Array();
+							var cssColoring = new Array();
+							var cssColoringHighlight = new Array();
+							var cssLen = document.styleSheets.length;
+							for(var i=0; i<cssLen; i++) {
+								var sheet = document.styleSheets[i];
+								id = sheet.cssRules[0].cssText;
+								if(isUndefined(id)) continue;
+								var found = id.match(/^styleid.*content:\s*["']([^"']*)["']/);
+								if(!found || found.length != 2) continue;
+								id = found[1];
+								cssStyle[id] = sheet;
+								if(id.startsWith("coloring:")) {
+									cssColoringHighlight[id.substr(9)] = sheet;
+									sheetCopy = document.createElement("style");
+									sheetCopy.type = 'text/css';
+									cssCode = '';
+									for(var j=0; j<sheet.cssRules.length; j++) {
+										/* generate new rule */
+										nr = sheet.cssRules[j].cssText;
+										nr = nr.replace(".highlight", "");
+										cssCode += nr;
+									}
+									sheetCopy.innerHTML = cssCode;
+									document.getElementsByTagName('head')[0].appendChild(sheetCopy);
+									cssColoring[id.substr(9)] = sheetCopy;
+								}
+								else {
+									sheet.disabled = false;
+								}
+							}
+							cssStyle["symbols"].disabled = !document.getElementById("showSymbols").checked;
+							cssStyle["chains"].disabled = !document.getElementById("showChains").checked;
+							
+							/* enable coloring with the given id and disable all the others */
+							function selectStyle(styles, id) {
+								var keys = Object.keys(styles);
+								for(var i=0; i<keys.length; i++) {
+									styles[keys[i]].disabled = keys[i] !== id;
+								}
+							}
+							selectStyle(cssColoringHighlight, null);
+							var optColor = document.getElementById("optColor");
+							selectStyle(cssColoring, optColor.options[optColor.selectedIndex].value);
+
+							function updateMode() {
+								console.log("update mode");
+								var sheet = cssStyle["taggerVisibility"];
+								while(sheet.cssRules.length>0) {
+									sheet.deleteRule(0);
+								}
+								function isEnabled(index) {
+									if(index==0) return false;
+									return document.getElementById('checkTag' + index).checked;
+								}
+								var enabledTaggers = new Array();
+								for(var i=1; i<taggers.length; i++) {
+									if(isEnabled(taggers[i]["id"])) {
+										enabledTaggers.push(taggers[i]["id"]);
+									}
+								}
+								if(enabledTaggers.length == 0) {
+									selectStyle(cssColoring, "noAnno");
+								}
+								else {
+									for(var i=0; i<taggers.length; i++) {
+										if(!isEnabled("" + i)) {
+											sheet.insertRule("[data-index='" + i + "'] { display: none; }", 0);
+										}
+									}
+									for(var i=0; i<markSpans.length; i++) {
+										if(enabledTaggers.length == 1) {
+											markSpans[i].setAttribute("data-split", "true");
+										}
+										else {
+											var base = null;
+											var taggerSpans = markSpans[i].getElementsByClassName("tagger");
+											// TODO: fix bug if wrongly tagged by second tagger
+											for(var j=0; j<taggers.length; j++) {
+												if(isEnabled(j)) {
+													var val = taggerSpans[j-1].getAttribute("data-eval") || "";
+													if( (base || val) != val) {
+														base = "split";
+														break;
+													}
+													base = base || val;
+												}
+											}
+											markSpans[i].setAttribute("data-split", base == "split");
+										}
+									}
+
+									// TODO: selectStyle with style choosen by user
+									var optColor = document.getElementById("optColor");
+									selectStyle(cssColoring, optColor.options[optColor.selectedIndex].value);
+								}
+							}
+
+							/* deselect highlight on click */
+							document.getElementById("content").onclick = function() {
+								selection = document.querySelectorAll(".highlight")
+								for(var i=0; i<selection.length; i++) {
+									selection[i].classList.remove("highlight");
+								}
+							}
+
+							/* add a value to the values of a key (in a multi-map) */
+							function put(map, key, value) {
+								if(key != null) {
+									list = map[key] || (map[key] = new Array());
+									list.push(value);
+								}
+							}
+							
+							/* helper to insert nodes in DOM*/
+							function after(newNode, refNode) {
+								if(isUndefined(refNode) || isUndefined(newNode)) return false;
+								refNode.parentNode.insertBefore(newNode, refNode.nextSibling);
+							}
+							function replace(newNode, refNode) {
+								if(isUndefined(refNode) || isUndefined(newNode)) return false;
+								return refNode.parentNode.replaceChild(newNode, refNode);
+							}
+
+							/* highlight chains on click on a mention */
+							function markOnclick(e) {
+								e.stopPropagation();
+								// check whether user has selected this element
+								var ancestor = e.target;
+								while((ancestor = ancestor.parentElement) && !ancestor.classList.contains("highlight"));
+								// deselect
+								selection = document.querySelectorAll(".highlight")
+								for(i=0; i<selection.length; i++) {
+									selection[i].classList.remove("highlight");
+								}
+								if(ancestor != null) {
+									selectStyle(cssColoring, optColor.options[optColor.selectedIndex].value);
+									return;
+								}
+								// determine which elements to select
+								elements = [];
+								for(i=0; i < this.entities.length; i++) {
+									els = entityToElements[this.entities[i]];
+									elements = elements.concat(els);
+								}
+								// highlight selection
+								for(i=0; i < elements.length; i++) {
+									elements[i].classList.add("highlight");
+								}
+								selectStyle(cssColoring, null);
+								selectStyle(cssColoringHighlight, optColor.options[optColor.selectedIndex].value);
+							}
+
+							/* generate tooltip */
+							function taggerInfo(element, em0, emI) {
+								var eval = element.getAttribute("data-eval")
+								switch (eval) {
+									case "correct":
+										result = "correctly annotated with '" + emI + "'";
+										break;
+									case "toomuch":
+										result = "should not be annotated, found '" + emI + "'";
+										break;
+									case "forgot":
+										result = "should have been annotated with '" + em0 + "'";
+										break;
+									case "wrong":
+										result = "should have been '" + em0 + "', but found '" + emI + "'";
+										break;
+									default:
+										result = "not annotated";
+								}
+								return result;
+							}
+
+							function isEmpty(n) {
+								return isUndefined(n) || n == null || n == "";
+							}
+
+							/* initialize tagger spans (onclick, associated entities, tagger info) */
+							for(var i=0; i<markSpans.length; i++) {
+								var entity = markSpans[i].getAttribute("data-entity0");
+								markSpans[i].entities = [entity];
+								put(entityToElements, entity, markSpans[i]);
+							}
+							// TODO: workaround for highlighting in noAnno
+							for(var i=0; i<taggerSpans.length; i++) {
+								var entityAttributes = ["data-entity0", "data-entity"];
+								var entities = entityAttributes.map(function(attribute){ return taggerSpans[i].getAttribute(attribute);});
+								var hasEntity = false;
+								for(var j=0; j<entities.length; j++) {
+									hasEntity |= !isEmpty(entities[j]);
+								}
+								if(hasEntity) {
+									taggerSpans[i].title = taggerInfo(taggerSpans[i], entities[0], entities[1]);
+									taggerSpans[i].entities = [entities[0]]; // highlight only marks goldstandard chain
+									taggerSpans[i].onclick = markOnclick;
+									for(j=0; j < entities.length; j++) {
+										put(entityToElements, entities[j], taggerSpans[i]);
+									}
+								}
+							}
+							
+							// add symbols
+							for(i=0; i < markSpans.length; i++) {
+								var split = markSpans[i].getAttribute("data-split");
+								var children = markSpans[i].getElementsByClassName("tagger");
+								
+								var anchor = document.createElement("span");
+								anchor.classList.add("grouped-symbols");
+								var firstFontNode = markSpans[i].getElementsByTagName("td")[2].getElementsByClassName("collapse")[0];
+								
+								var parent = document.createElement("span");
+								parent.classList.add("symbols");
+								parent.appendChild(anchor);
+								firstFontNode.appendChild(parent);
+								
+								for(var j=0; j<children.length; j++) {
+									// create symbol
+									var content, index, dest, eval;
+									eval = children[j].getAttribute("data-eval");
+									switch(eval) {
+										// TODO: symbols
+										case "correct":
+											content = "&#x2714;"; // ✔
+											break;
+										case "toomuch":
+											content = "&#x2718;"; // TODO: another symbol?
+											break;
+										case "forgot":
+											content = "&quest;"; //"&#x2753;"; // ❓
+											break;
+										case "wrong":
+											content = "&#x2718;"; // ✘
+											break;
+										default:
+											content = "";
+									}
+									index = children[j].getAttribute("data-index");
+									// symbol after each tagger's mention
+									dest = children[j].getElementsByTagName("td")[2];
+									
+									if(!isUndefined(dest)) {
+										if(j != 0) {
+											dest = initElement(dest, 'span', {
+												class:"symbols"});
+										} else {
+											initElement(parent,'span',{
+												class:"symbol single-symbol", 
+												}, content);
+										}
+										initElement(dest,'span',{
+											class:"symbol single-symbol", 
+											"data-index":index}, content);
+										}
+								}
+							}
+						}
+						]]>
+					</script>
+				</body>
+			</html>
+		</xsl:template>
+
+		<xsl:template match="*">
+			<xsl:message terminate="no">
+				WARNING: Unmatched element: <xsl:value-of select="name()"/>
+			</xsl:message>
+
+			<xsl:apply-templates/>
+		</xsl:template>
+
+		<!-- process articles -->
+		<xsl:template match="articles/article">
+			<h2>
+				Article <xsl:value-of select="@id"/>
+			</h2>
+			<div>
+				<xsl:apply-templates />
+			</div>
+		</xsl:template>
+
+		<!-- process newlines -->
+		<xsl:template match="br">
+			<br /> &#xA0; <br />
+		</xsl:template>
+
+		<!-- transform an xml element to a JavaScript object 
+			with attributes name, attr, and children
+			which contain their respective XML (transformed) value
+			ATTENTION: call this with a single node!
+		-->
+		<xsl:template match="*" mode="js">
+			<xsl:text>{"name":"</xsl:text>
+			<xsl:value-of select="name(.)"/>
+			<xsl:text>",</xsl:text>
+			<xsl:if test="@*">
+				<xsl:text> attr:{</xsl:text>
+				<!-- attributes -->
+				<xsl:for-each select="@*">
+					<xsl:text>"</xsl:text><xsl:value-of select="name()"/>
+					<xsl:text>": "</xsl:text><xsl:value-of select="."/><xsl:text>",<!--&#xa;--></xsl:text>
+				</xsl:for-each>
+				<xsl:text>},</xsl:text>
+			</xsl:if>
+			<xsl:if test="*">
+				<xsl:text> children:[</xsl:text>
+				<xsl:for-each select="*">
+					<xsl:apply-templates select="." mode="js"/>
+					<xsl:text>,<!--&#xa;--></xsl:text>
+				</xsl:for-each>
+				<xsl:text>],</xsl:text>
+			</xsl:if>
+			<xsl:text>}</xsl:text>
+		</xsl:template>
+
+
+		<xsl:template match="mark">
+			<span class="mark">
+				<xsl:for-each select='@*'>
+					<xsl:attribute name="data-{name()}"><xsl:value-of select="."/></xsl:attribute>
+				</xsl:for-each>
+				<table class="overlay">
+					<tr class="combined">
+						<td>
+							<span class="collapse">
+						<xsl:call-template name="chainImpl">
+							<xsl:with-param name="chain0" select="@chain-before0" />
+						</xsl:call-template>
+							</span>
+						</td>
+
+						<td>
+							<span class="collapse">
+								<xsl:value-of select="."/>
+							</span>
+						</td>
+
+						<td><span class="collapse"/></td>
+
+						<td>
+							<span class="collapse">
+								<xsl:call-template name="chainImpl">
+									<xsl:with-param name="chain0" select="@chain-after0" />
+								</xsl:call-template>
+							</span>
+						</td>
+					</tr>
+					<!-- <span class="stack"> -->
+						<xsl:apply-templates select="*"/>
+					<!-- </span>-->
+				</table>
+			</span>
+		</xsl:template>
+
+		<xsl:template match="mark/tagger">
+			<tr class="tagger">
+			<xsl:attribute name="data-eval"><xsl:value-of select="@eval"/></xsl:attribute>
+			<xsl:if test="../@entity0 != ''">
+				<xsl:attribute name="data-entity0"><xsl:value-of select="../@entity0"/></xsl:attribute>
+			</xsl:if>
+			<xsl:for-each select='@*'>
+				<xsl:attribute name="data-{name()}"><xsl:value-of select="."/></xsl:attribute>
+			</xsl:for-each>
+
+			<td>
+				<xsl:call-template name="chainImpl">
+					<xsl:with-param name="chain0" select="../@chain-before0" />
+					<xsl:with-param name="chain" select="@chain-before" />
+				</xsl:call-template>
+			</td>
+
+			<td>
+				<xsl:value-of select=".." />
+			</td>
+
+			<td/>
+
+			<td>
+				<xsl:call-template name="chainImpl">
+					<xsl:with-param name="chain0" select="../@chain-after0" />
+					<xsl:with-param name="chain" select="@chain-after" />
+				</xsl:call-template>
+			</td>
+			
+			</tr>
+		</xsl:template>
+
+		 
+	
+
+		<xsl:template name="chainImpl">
+			<xsl:param name="chain0"/>
+			<xsl:param name="chain"/>
+
+			<xsl:if test="$chain0 != '' or $chain != ''">
+				<span class="supsub">
+					<span class="superscript">
+						<xsl:value-of select="$chain0" />
+						<xsl:if test="not($chain0)">&#160;</xsl:if>
+					</span>
+					<span class="subscript">
+						<xsl:value-of select="$chain" />
+						<xsl:if test="not($chain)">&#160;</xsl:if>
+					</span>
+				</span>
+			</xsl:if>
+
+		</xsl:template>
+
+
+		<xsl:template match="evaluation">
+			<span class="eval">
+				<xsl:attribute name="data-name"><xsl:value-of select="@name"/></xsl:attribute> 
+				<xsl:attribute name="data-precision"><xsl:value-of select="@precision"/></xsl:attribute> 
+				<xsl:attribute name="data-recall"><xsl:value-of select="@recall"/></xsl:attribute> 
+				<xsl:attribute name="data-annotator"><xsl:value-of select="../@id"/></xsl:attribute> 
+			</span>
+		</xsl:template>
+
+	 	<xsl:template match="evalAnno">
+			<xsl:apply-templates />
+		</xsl:template>
+	</xsl:stylesheet>
+	
+	<article/>
+</articles>

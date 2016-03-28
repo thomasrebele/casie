@@ -8,9 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javatools.datatypes.PeekIterator;
-import tpt.dbweb.cat.Utility;
 import tpt.dbweb.cat.datatypes.EntityMention;
 import tpt.dbweb.cat.datatypes.iterators.EntityMentionPosIterator.PosType;
+import tpt.dbweb.cat.tools.Utility;
 
 /**
  * Iterate over entity mentions of two tagged texts at the same time.

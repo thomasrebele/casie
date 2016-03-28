@@ -5,7 +5,7 @@ import java.util.function.Function;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
-import tpt.dbweb.cat.Utility;
+import tpt.dbweb.cat.tools.Utility;
 
 /**
  * This class converts an iterator to an out iterator,

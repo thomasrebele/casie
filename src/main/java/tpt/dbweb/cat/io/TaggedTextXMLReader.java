@@ -29,10 +29,10 @@ import org.slf4j.LoggerFactory;
 
 import javatools.datatypes.PeekIterator;
 import javatools.filehandlers.FileLines;
-import tpt.dbweb.cat.Utility;
 import tpt.dbweb.cat.datatypes.EntityMention;
 import tpt.dbweb.cat.datatypes.TaggedText;
 import tpt.dbweb.cat.datatypes.TextSpan;
+import tpt.dbweb.cat.tools.Utility;
 
 public class TaggedTextXMLReader {
 
