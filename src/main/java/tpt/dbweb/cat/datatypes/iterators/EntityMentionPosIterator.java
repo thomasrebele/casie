@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import tpt.dbweb.cat.datatypes.EntityMention;
-import tpt.dbweb.cat.datatypes.iterators.EntityMentionPosIterator.PosType;
 
 /**
  * Iterates over positions (start, end) of an entity mention iterator.

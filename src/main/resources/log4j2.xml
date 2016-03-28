@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+			<Filters>
+				<ThresholdFilter level="warn" onMatch="DENY" onMismatch="ACCEPT" />
+			</Filters>
+		</Console>
+		<Console name="ErrConsole" target="SYSTEM_ERR">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+			<Filters>
+				<ThresholdFilter level="warn" onMatch="ACCEPT"/>
+			</Filters>
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Root level="info">
+			<AppenderRef ref="Console"/>
+			<AppenderRef ref="ErrConsole"/>
+		</Root>
+		<Logger name="tpt.dbweb.cat.io.TaggedTextXMLReader" level="error">
+			<AppenderRef ref="ErrConsole" />
+		</Logger>
+		<Logger name="factChecker.mapdb.YAGOMapDB" level="info">
+			<AppenderRef ref="Console" />
+		</Logger>
+	</Loggers>
+</Configuration>
