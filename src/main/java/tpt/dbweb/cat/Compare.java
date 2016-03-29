@@ -7,7 +7,6 @@ import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -54,12 +53,8 @@ public class Compare {
    */
   public static class Options {
 
-    // TODO: change the parameters?
-    @Parameter(names = "--compare-expected")
-    public String expected = null;
-
     @Parameter(names = "--compare-input")
-    public String input = null;
+    public List<String> input = null;
 
     @Parameter(names = "--compare-out")
     public String outputFile = null;
@@ -102,9 +97,10 @@ public class Compare {
   }
 
   public static void compareXML(Options options, ComparisonResult evaluations) throws IOException {
-    if (options.outputFile != null && options.expected != null && options.input != null) {
+    if (options.outputFile != null && options.input != null && options.input.size() > 1) {
       Compare compare = new Compare(new Options());
-      compare.compareXML(Arrays.asList(Paths.get(options.expected), Paths.get(options.input)), Paths.get(options.outputFile), evaluations);
+      List<Path> paths = options.input.stream().map(str -> Paths.get(str)).collect(Collectors.toList());
+      compare.compareXML(paths, Paths.get(options.outputFile), evaluations);
     }
   }
 
