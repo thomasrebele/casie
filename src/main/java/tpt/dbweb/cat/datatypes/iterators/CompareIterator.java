@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import javatools.datatypes.PeekIterator;
 import tpt.dbweb.cat.datatypes.EntityMention;
+import tpt.dbweb.cat.datatypes.TaggedText;
 import tpt.dbweb.cat.datatypes.iterators.EntityMentionPosIterator.PosType;
+import tpt.dbweb.cat.io.TaggedTextXMLReader;
 import tpt.dbweb.cat.tools.Utility;
 
 /**
@@ -195,16 +197,16 @@ public class CompareIterator extends PeekIterator<ComparePair> {
   }
 
   public static void main(String[] args) {
-    /*String text0 = "first <mark entity='1'>second <mark entity='2'>third</mark></mark> end";
+    String text0 = "first <mark entity='1'>second <mark entity='2'>third</mark></mark> end";
     String text1 = "first <mark entity='1'>second <mark entity='2'>third</mark></mark> end";
     TaggedText tt0 = new TaggedTextXMLReader().getFirstTaggedTextFromString(text0);
     TaggedText tt1 = new TaggedTextXMLReader().getFirstTaggedTextFromString(text1);
-    
+
     for (ComparePair p : Utility.iterable(new CompareIterator(tt0.text, "test", tt0.mentions, tt1.mentions))) {
       System.out.println(p);
       System.out.println(p.emps.get(0));
       System.out.println(p.emps.get(1));
-    }*/
+    }
   }
 
 }

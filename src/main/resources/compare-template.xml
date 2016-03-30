@@ -24,7 +24,7 @@
 			
 			<html xmlns:x="http://telecom-paristech.fr/namespace/">
 				<head>
-					<title>Annotations</title> <!-- TODO: change name -->
+					<title>CAT</title>
 					<meta charset="UTF-8" />
 					<style>
 						.stack {display: inline-flex; flex-direction: column;}
@@ -80,6 +80,7 @@
 						styleid { content: 'taggerVisibility'; }
 						/*hide taggers by adding a rule like [data-index="1"] { display: none}, show them by removing that rule */
 					</style>
+					
 					<style>
 						styleid { content: 'coloring:tagger'; }
 						/*.tagger { font-weight: bold; }*/
@@ -106,13 +107,26 @@
 						[data-eval="forgot"].highlight { color: DarkSlateBlue; }
 						[data-eval="wrong"].highlight { color: red; }
 					</style>
-					
 					<style>
 						styleid { content: 'coloring:diff'; }
 						[data-split="false"] .highlight.tagger { color: green; }
 						[data-split="true"] .highlight.tagger { color: red; }
 					</style>
-
+					<style>
+						styleid { content: 'coloring:chains'; }
+						.highlight.rightchain.tagger { color: green; }
+						.highlight.wrongchain.tagger { color: red; }
+						.highlight.rightchain.wrongchain.tagger { color: black; }
+						.highlight.selected { /*border: solid black 1px;*/ text-decoration: underline; }
+					</style>
+					<style>
+						styleid { content: 'highlighting:enabled'; }
+						[data-index] { color: gray; }
+					</style>
+					<style>
+						styleid { content: 'highlighting:disabled'; }
+						.combined { text-shadow: .5px 0px .0px, -.5px 0px .0px; color: black; }
+					</style>
 					<style>
 						styleid { content: 'symbols'; }
 						.symbols { display: initial; }
@@ -467,10 +481,6 @@
 							  }
 							 }
 
-							
-							
-							
-
 							function fillEvalTable(metric){
 								/*var evalPerAnno = document.querySelectorAll("span.eval");
 								if(evalPerAnno.length == 0) {
@@ -592,15 +602,9 @@
 							} 
 							/*updateDiagram(metrics[0]);*/
 
-							var markSpans = document.querySelectorAll("span.mark");
-							var taggerSpans = document.querySelectorAll("tr.tagger, tr.combined");
-
-							var entityToElements = new Array();
-							
 							/* fetch named css styles and store them in a map */
 							var cssStyle = new Array();
-							var cssColoring = new Array();
-							var cssColoringHighlight = new Array();
+							var cssGroup = new Array();
 							var cssLen = document.styleSheets.length;
 							for(var i=0; i<cssLen; i++) {
 								var sheet = document.styleSheets[i];
@@ -610,25 +614,37 @@
 								if(!found || found.length != 2) continue;
 								id = found[1];
 								cssStyle[id] = sheet;
-								if(id.startsWith("coloring:")) {
-									cssColoringHighlight[id.substr(9)] = sheet;
-									sheetCopy = document.createElement("style");
-									sheetCopy.type = 'text/css';
-									cssCode = '';
-									for(var j=0; j<sheet.cssRules.length; j++) {
-										/* generate new rule */
-										nr = sheet.cssRules[j].cssText;
-										nr = nr.replace(".highlight", "");
-										cssCode += nr;
+								var colonPos = id.indexOf(":");
+								if(colonPos >= 0) {
+									var groupName = id.substr(0, colonPos);
+									if(isUndefined(cssGroup[groupName])) {
+										cssGroup[groupName] = new Array();
 									}
-									sheetCopy.innerHTML = cssCode;
-									document.getElementsByTagName('head')[0].appendChild(sheetCopy);
-									cssColoring[id.substr(9)] = sheetCopy;
-								}
-								else {
-									sheet.disabled = false;
+									cssGroup[groupName][id.substr(colonPos+1)] = sheet;
+									sheet.disabled = true;
 								}
 							}
+							// transform coloring to cssGroup highlight
+							var keys = Object.keys(cssGroup["coloring"]);
+							cssGroup["coloringHighlight"] = new Array();
+							for(var i=0; i<keys.length; i++) {
+								var name = keys[i];
+								sheet = cssGroup["coloring"][name];
+								cssGroup["coloringHighlight"][name] = sheet;
+								sheetCopy = document.createElement("style");
+								sheetCopy.type = 'text/css';
+								cssCode = '';
+								for(var j=0; j<sheet.cssRules.length; j++) {
+									// generate new rule
+									nr = sheet.cssRules[j].cssText;
+									nr = nr.replace(".highlight", "");
+									cssCode += nr;
+								}
+								sheetCopy.innerHTML = cssCode;
+								document.getElementsByTagName('head')[0].appendChild(sheetCopy);
+								cssGroup["coloring"][name] = sheetCopy;
+							}
+
 							cssStyle["symbols"].disabled = !document.getElementById("showSymbols").checked;
 							cssStyle["chains"].disabled = !document.getElementById("showChains").checked;
 							
@@ -639,12 +655,24 @@
 									styles[keys[i]].disabled = keys[i] !== id;
 								}
 							}
-							selectStyle(cssColoringHighlight, null);
-							var optColor = document.getElementById("optColor");
-							selectStyle(cssColoring, optColor.options[optColor.selectedIndex].value);
 
+							var markSpans = document.querySelectorAll("span.mark");
 							function updateMode() {
-								console.log("update mode");
+								var coloringGroup;
+								var highlightMode = document.querySelectorAll(".highlight").length > 0;
+								var optColor = document.getElementById("optColor");
+								if(highlightMode) {
+									coloringGroup = "coloringHighlight";
+									selectStyle(cssGroup["highlighting"], "enabled");
+									selectStyle(cssGroup["coloring"], null);
+									selectStyle(cssGroup[coloringGroup], "chains");
+								} else {
+									coloringGroup = "coloring";
+									selectStyle(cssGroup["highlighting"], "disabled");
+									selectStyle(cssGroup["coloringHighlight"], null);
+									selectStyle(cssGroup[coloringGroup], optColor.options[optColor.selectedIndex].value);
+								}
+
 								var sheet = cssStyle["taggerVisibility"];
 								while(sheet.cssRules.length>0) {
 									sheet.deleteRule(0);
@@ -660,7 +688,7 @@
 									}
 								}
 								if(enabledTaggers.length == 0) {
-									selectStyle(cssColoring, "noAnno");
+									selectStyle(cssGroup[coloringGroup], "noAnno");
 								}
 								else {
 									for(var i=0; i<taggers.length; i++) {
@@ -677,7 +705,11 @@
 											var taggerSpans = markSpans[i].getElementsByClassName("tagger");
 											// TODO: fix bug if wrongly tagged by second tagger
 											for(var j=0; j<taggers.length; j++) {
-												if(isEnabled(j)) {
+												if(isEnabled("" + j)) {
+													if(taggerSpans[j-1].classList.contains("highlight")) {
+														base = "split";
+														break;
+													}
 													var val = taggerSpans[j-1].getAttribute("data-eval") || "";
 													if( (base || val) != val) {
 														base = "split";
@@ -689,12 +721,9 @@
 											markSpans[i].setAttribute("data-split", base == "split");
 										}
 									}
-
-									// TODO: selectStyle with style choosen by user
-									var optColor = document.getElementById("optColor");
-									selectStyle(cssColoring, optColor.options[optColor.selectedIndex].value);
 								}
 							}
+							updateMode();
 
 							/* deselect highlight on click */
 							document.getElementById("content").onclick = function() {
@@ -702,6 +731,7 @@
 								for(var i=0; i<selection.length; i++) {
 									selection[i].classList.remove("highlight");
 								}
+								updateMode();
 							}
 
 							/* add a value to the values of a key (in a multi-map) */
@@ -722,33 +752,67 @@
 								return refNode.parentNode.replaceChild(newNode, refNode);
 							}
 
+							function ancestorWithClass(element, clazz) {
+								var ancestor = element;
+								while((ancestor = ancestor.parentElement) && !ancestor.classList.contains(clazz));
+								return ancestor;
+							}
+
+							function removeClass(clazz) {
+								selection = document.querySelectorAll("." + clazz)
+								for(i=0; i<selection.length; i++) {
+									selection[i].classList.remove(clazz);
+								}
+							}
+
 							/* highlight chains on click on a mention */
 							function markOnclick(e) {
 								e.stopPropagation();
 								// check whether user has selected this element
-								var ancestor = e.target;
-								while((ancestor = ancestor.parentElement) && !ancestor.classList.contains("highlight"));
+								var wasHighlighted = ancestorWithClass(e.target, "highlight") != null;
 								// deselect
-								selection = document.querySelectorAll(".highlight")
-								for(i=0; i<selection.length; i++) {
-									selection[i].classList.remove("highlight");
-								}
-								if(ancestor != null) {
-									selectStyle(cssColoring, optColor.options[optColor.selectedIndex].value);
+								removeClass("selected");
+								removeClass("highlight");
+								removeClass("rightchain");
+								removeClass("wrongchain");
+								if(wasHighlighted) {
+									updateMode();
 									return;
 								}
+								var ancestor = ancestorWithClass(e.target, "tagger");
+								ancestor.classList.add("selected");
+								var index = ancestor.getAttribute("data-index");
+								var thisEntity = ancestor.getAttribute("data-entity");
+								var goldEntity = ancestorWithClass(e.target, "mark").getAttribute("data-entity0");
+								console.log(e.target, thisEntity);
 								// determine which elements to select
-								elements = [];
-								for(i=0; i < this.entities.length; i++) {
-									els = entityToElements[this.entities[i]];
-									elements = elements.concat(els);
-								}
+								var elements = [].concat(entityToElements[index][thisEntity]);
+								elements = elements.concat(entityToElements[0][goldEntity]);
+								console.log("elements", elements);
 								// highlight selection
 								for(i=0; i < elements.length; i++) {
-									elements[i].classList.add("highlight");
+									if(!isUndefined(elements[i])) {
+										var taggerSpans = [elements[i]];
+										if(!elements[i].classList.contains("tagger")) {
+											taggerSpans = elements[i].querySelectorAll(".tagger[data-index='" + index + "']");
+										}
+										console.log(taggerSpans);
+										for(var j=0; j<taggerSpans.length; j++) {
+											var taggerSpan = taggerSpans[j];
+											taggerSpan.classList.add("highlight");
+											if(ancestorWithClass(taggerSpan, "mark").getAttribute("data-entity0") == goldEntity) {
+												taggerSpan.classList.add("rightchain");
+											}
+
+											console.log(ancestor.getAttribute("data-eval"))
+											console.log(ancestor.getAttribute("data-eval") != "correct")
+											if(taggerSpan.getAttribute("data-entity") == thisEntity && ancestor.getAttribute("data-eval") != "correct") {
+												taggerSpan.classList.add("wrongchain");
+											}
+										}
+									}
 								}
-								selectStyle(cssColoring, null);
-								selectStyle(cssColoringHighlight, optColor.options[optColor.selectedIndex].value);
+								updateMode();
 							}
 
 							/* generate tooltip */
@@ -757,6 +821,7 @@
 								switch (eval) {
 									case "correct":
 										result = "correctly annotated with '" + emI + "'";
+										if(isUndefined(emI)) console.log(new Error().stack);
 										break;
 									case "toomuch":
 										result = "should not be annotated, found '" + emI + "'";
@@ -777,30 +842,30 @@
 								return isUndefined(n) || n == null || n == "";
 							}
 
+							// map from entity to tagger to element
+							var entityToElements = new Array();
+							for(var i=0; i<taggers.length; i++) {
+								entityToElements.push(new Array());
+							}
 							/* initialize tagger spans (onclick, associated entities, tagger info) */
 							for(var i=0; i<markSpans.length; i++) {
-								var entity = markSpans[i].getAttribute("data-entity0");
-								markSpans[i].entities = [entity];
-								put(entityToElements, entity, markSpans[i]);
-							}
-							// TODO: workaround for highlighting in noAnno
-							for(var i=0; i<taggerSpans.length; i++) {
-								var entityAttributes = ["data-entity0", "data-entity"];
-								var entities = entityAttributes.map(function(attribute){ return taggerSpans[i].getAttribute(attribute);});
-								var hasEntity = false;
-								for(var j=0; j<entities.length; j++) {
-									hasEntity |= !isEmpty(entities[j]);
-								}
-								if(hasEntity) {
-									taggerSpans[i].title = taggerInfo(taggerSpans[i], entities[0], entities[1]);
-									taggerSpans[i].entities = [entities[0]]; // highlight only marks goldstandard chain
-									taggerSpans[i].onclick = markOnclick;
-									for(j=0; j < entities.length; j++) {
-										put(entityToElements, entities[j], taggerSpans[i]);
+								var goldEntity = markSpans[i].getAttribute("data-entity0");
+								put(entityToElements[0], goldEntity, markSpans[i]);
+
+								var taggerSpans = markSpans[i].querySelectorAll("tr.tagger, tr.combined");
+								// TODO: workaround for highlighting in noAnno
+								for(var j=0; j<taggerSpans.length; j++) {
+									var index = taggerSpans[j].getAttribute("data-index");
+									var thisEntity = taggerSpans[j].getAttribute("data-entity");
+									var hasEntity = !isEmpty(goldEntity) || !isEmpty(thisEntity);
+									if(hasEntity) {
+										taggerSpans[j].title = taggerInfo(taggerSpans[j], goldEntity, thisEntity);
+										taggerSpans[j].onclick = markOnclick;
+										put(entityToElements[index], thisEntity, taggerSpans[j]);
 									}
 								}
 							}
-							
+
 							// add symbols
 							for(i=0; i < markSpans.length; i++) {
 								var split = markSpans[i].getAttribute("data-split");
@@ -852,7 +917,7 @@
 										initElement(dest,'span',{
 											class:"symbol single-symbol", 
 											"data-index":index}, content);
-										}
+									}
 								}
 							}
 						}
@@ -956,9 +1021,6 @@
 		<xsl:template match="mark/tagger">
 			<tr class="tagger">
 			<xsl:attribute name="data-eval"><xsl:value-of select="@eval"/></xsl:attribute>
-			<xsl:if test="../@entity0 != ''">
-				<xsl:attribute name="data-entity0"><xsl:value-of select="../@entity0"/></xsl:attribute>
-			</xsl:if>
 			<xsl:for-each select='@*'>
 				<xsl:attribute name="data-{name()}"><xsl:value-of select="."/></xsl:attribute>
 			</xsl:for-each>
