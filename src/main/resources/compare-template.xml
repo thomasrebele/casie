@@ -40,13 +40,13 @@
 						
 						/* combine elements according to split attribute */
 						[data-split="true"] .combined { visibility: hidden; }
-						[data-split="false"] .tagger { visibility: hidden; }
+						[data-split="false"] .annotator { visibility: hidden; }
 						[data-split="false"] .combined { visibility: visible; }
 						[data-split="false"]:hover .combined { visibility: hidden;  }
-						[data-split="false"]:hover .tagger { visibility: visible; }
+						[data-split="false"]:hover .annotator { visibility: visible; }
 
 						.highlight .combined { visibility: hidden; }
-						.highlight .tagger { visibility: visible; }
+						.highlight .annotator { visibility: visible; }
 
 						table.overlay { display: inline-block; vertical-align: top; }
 						.combined, .combined td { height: 0px; }
@@ -75,17 +75,16 @@
      					  width:50%;
 					    }
 					</style>
-					<!-- container for tagger visibility rules -->
+					<!-- container for annotator visibility rules -->
 					<style>
-						styleid { content: 'taggerVisibility'; }
-						/*hide taggers by adding a rule like [data-index="1"] { display: none}, show them by removing that rule */
+						styleid { content: 'annotatorVisibility'; }
+						/*hide annotators by adding a rule like [data-index="1"] { display: none}, show them by removing that rule */
 					</style>
 					
 					<style>
-						styleid { content: 'coloring:tagger'; }
-						/*.tagger { font-weight: bold; }*/
-						[data-split="false"] .highlight .tagger:first-child { color: <xsl:value-of select="$color1and2"/>; text-shadow: .5px 0px .0px, -.5px 0px .0px;} /* color1and2 */
-						[data-split="false"]:hover .highlight .tagger:first-child { color: <xsl:value-of select="$color1"/>; }
+						styleid { content: 'coloring:annotators'; }
+						[data-split="false"] .highlight .annotator:first-child { color: <xsl:value-of select="$color1and2"/>; text-shadow: .5px 0px .0px, -.5px 0px .0px;} /* color1and2 */
+						[data-split="false"]:hover .highlight .annotator:first-child { color: <xsl:value-of select="$color1"/>; }
 						
 						[data-index="1"]:not([data-eval=""]).highlight { color: <xsl:value-of select="$color1"/>; }
 						[data-index="2"]:not([data-eval=""]).highlight { color: <xsl:value-of select="$color2"/>; }
@@ -109,14 +108,14 @@
 					</style>
 					<style>
 						styleid { content: 'coloring:diff'; }
-						[data-split="false"] .highlight.tagger { color: green; }
-						[data-split="true"] .highlight.tagger { color: red; }
+						[data-split="false"] .highlight.annotator { color: green; }
+						[data-split="true"] .highlight.annotator { color: red; }
 					</style>
 					<style>
 						styleid { content: 'coloring:chains'; }
-						.highlight.rightchain.tagger { color: green; }
-						.highlight.wrongchain.tagger { color: red; }
-						.highlight.rightchain.wrongchain.tagger { color: black; }
+						.highlight.rightchain.annotator { color: green; }
+						.highlight.wrongchain.annotator { color: red; }
+						.highlight.rightchain.wrongchain.annotator { color: black; }
 						.highlight.selected { /*border: solid black 1px;*/ text-decoration: underline; }
 					</style>
 					<style>
@@ -184,7 +183,7 @@
 							width: 17vw;
 						}
 
-						#taggers {
+						#annotators {
 						/*	margin-right: 2px;
 							position: fixed;
 							top:5.5vw;
@@ -305,7 +304,7 @@
 									return r;
 								}
 
-								taggers = collapseXMLJson(]]><xsl:apply-templates select="articles/taggers" mode="js"/><![CDATA[)["tagger"];
+								annotators = collapseXMLJson(]]><xsl:apply-templates select="articles/annotators" mode="js"/><![CDATA[)["annotator"];
 							}
 						]]>
 					</script>
@@ -331,7 +330,7 @@
 								  	<a href="javascript:void(0)" id="modeMenu" class="dropbtn" onclick="dropDown('modeButton')">Mode</a>
 								    <div class="dropdown-content" id="modeButton">
 										<select class='menu' id="optColor" size="2" onchange="updateMode()"> 
-											<option value="tagger">tagger</option> 
+											<option value="annotator">annotator</option> 
 											<option value="eval" selected="true">evaluation</option> 
 									</select>		
 									</div>
@@ -356,7 +355,7 @@
 						<div >	
 								<h3 style="background-color: #333;color:white;"> Annotators </h3>
 							</div>
-						<div id="taggers" xmlns="http://www.w3.org/1999/xhtml">
+						<div id="annotators" xmlns="http://www.w3.org/1999/xhtml">
 						</div>	
 						<div style='border-style: none;' >	
 							<div >	
@@ -451,12 +450,12 @@
 							}
 
 							/*To dynamically create the annotator checkboxes*/
-							for(var k=1;k<taggers.length;k++){
-								initElement(document.getElementById('taggers'),'input',{type:'checkbox', id:"checkTag"+taggers[k]["id"], name:'tagger'+taggers[k]["id"] ,value:"tagger"+taggers[k]["id"], onchange:"updateMode();", checked:'checked'});
-								elementLabeling("Anno "+taggers[k]["id"],"checkTag"+taggers[k]["id"],document.getElementById('taggers'));
-								if(k<taggers.length-1){
+							for(var k=1;k<annotators.length;k++){
+								initElement(document.getElementById('annotators'),'input',{type:'checkbox', id:"checkTag"+annotators[k]["id"], name:'annotator'+annotators[k]["id"] ,value:"annotator"+annotators[k]["id"], onchange:"updateMode();", checked:'checked'});
+								elementLabeling("Anno "+annotators[k]["id"],"checkTag"+annotators[k]["id"],document.getElementById('annotators'));
+								if(k<annotators.length-1){
 									var br = document.createElement('br');
-									document.getElementById('taggers').appendChild(br);
+									document.getElementById('annotators').appendChild(br);
 								}
 							}
 							
@@ -513,8 +512,8 @@
 
 								}
 								
-								for (var i=0;i<taggers.length;i++) {
-								 	var anno=taggers[i]["id"];
+								for (var i=0;i<annotators.length;i++) {
+								 	var anno=annotators[i]["id"];
 								 	var row= table.insertRow(-1);
 									var annoCell = row.insertCell(0);
 									annoCell.innerHTML = "anno "+anno;
@@ -562,7 +561,7 @@
 							
 							function updateDiagram(metric){   
 								var svg =  document.getElementById('mySVG');
-								if(taggers.length==0 || metrics.length==0 ){
+								if(annotators.length==0 || metrics.length==0 ){
 									console.log("No annotators or metrics for evaluation!");
 								}
 								var childrenNodes = svg.childNodes;
@@ -577,8 +576,8 @@
 							 		
 								}
 								
-								for (var i=0;i<taggers.length;i++) {
-								 	var anno=taggers[i]["id"];
+								for (var i=0;i<annotators.length;i++) {
+								 	var anno=annotators[i]["id"];
 								 	var precision;
 								 	var recall;
  								 	for(var j=0;j<evalPerAnno.length;j++){
@@ -673,7 +672,7 @@
 									selectStyle(cssGroup[coloringGroup], optColor.options[optColor.selectedIndex].value);
 								}
 
-								var sheet = cssStyle["taggerVisibility"];
+								var sheet = cssStyle["annotatorVisibility"];
 								while(sheet.cssRules.length>0) {
 									sheet.deleteRule(0);
 								}
@@ -682,16 +681,16 @@
 									return document.getElementById('checkTag' + index).checked;
 								}
 								var enabledTaggers = new Array();
-								for(var i=1; i<taggers.length; i++) {
-									if(isEnabled(taggers[i]["id"])) {
-										enabledTaggers.push(taggers[i]["id"]);
+								for(var i=1; i<annotators.length; i++) {
+									if(isEnabled(annotators[i]["id"])) {
+										enabledTaggers.push(annotators[i]["id"]);
 									}
 								}
 								if(enabledTaggers.length == 0) {
 									selectStyle(cssGroup[coloringGroup], "noAnno");
 								}
 								else {
-									for(var i=0; i<taggers.length; i++) {
+									for(var i=0; i<annotators.length; i++) {
 										if(!isEnabled("" + i)) {
 											sheet.insertRule("[data-index='" + i + "'] { display: none; }", 0);
 										}
@@ -702,15 +701,15 @@
 										}
 										else {
 											var base = null;
-											var taggerSpans = markSpans[i].getElementsByClassName("tagger");
-											// TODO: fix bug if wrongly tagged by second tagger
-											for(var j=0; j<taggers.length; j++) {
+											var annotatorSpans = markSpans[i].getElementsByClassName("annotator");
+											// TODO: fix bug if wrongly tagged by second annotator
+											for(var j=0; j<annotators.length; j++) {
 												if(isEnabled("" + j)) {
-													if(taggerSpans[j-1].classList.contains("highlight")) {
+													if(annotatorSpans[j-1].classList.contains("highlight")) {
 														base = "split";
 														break;
 													}
-													var val = taggerSpans[j-1].getAttribute("data-eval") || "";
+													var val = annotatorSpans[j-1].getAttribute("data-eval") || "";
 													if( (base || val) != val) {
 														base = "split";
 														break;
@@ -779,7 +778,7 @@
 									updateMode();
 									return;
 								}
-								var ancestor = ancestorWithClass(e.target, "tagger");
+								var ancestor = ancestorWithClass(e.target, "annotator");
 								ancestor.classList.add("selected");
 								var index = ancestor.getAttribute("data-index");
 								var thisEntity = ancestor.getAttribute("data-entity");
@@ -792,22 +791,22 @@
 								// highlight selection
 								for(i=0; i < elements.length; i++) {
 									if(!isUndefined(elements[i])) {
-										var taggerSpans = [elements[i]];
-										if(!elements[i].classList.contains("tagger")) {
-											taggerSpans = elements[i].querySelectorAll(".tagger[data-index='" + index + "']");
+										var annotatorSpans = [elements[i]];
+										if(!elements[i].classList.contains("annotator")) {
+											annotatorSpans = elements[i].querySelectorAll(".annotator[data-index='" + index + "']");
 										}
-										console.log(taggerSpans);
-										for(var j=0; j<taggerSpans.length; j++) {
-											var taggerSpan = taggerSpans[j];
-											taggerSpan.classList.add("highlight");
-											if(ancestorWithClass(taggerSpan, "mark").getAttribute("data-entity0") == goldEntity) {
-												taggerSpan.classList.add("rightchain");
+										console.log(annotatorSpans);
+										for(var j=0; j<annotatorSpans.length; j++) {
+											var annotatorSpan = annotatorSpans[j];
+											annotatorSpan.classList.add("highlight");
+											if(ancestorWithClass(annotatorSpan, "mark").getAttribute("data-entity0") == goldEntity) {
+												annotatorSpan.classList.add("rightchain");
 											}
 
 											console.log(ancestor.getAttribute("data-eval"))
 											console.log(ancestor.getAttribute("data-eval") != "correct")
-											if(taggerSpan.getAttribute("data-entity") == thisEntity && ancestor.getAttribute("data-eval") != "correct") {
-												taggerSpan.classList.add("wrongchain");
+											if(annotatorSpan.getAttribute("data-entity") == thisEntity && ancestor.getAttribute("data-eval") != "correct") {
+												annotatorSpan.classList.add("wrongchain");
 											}
 										}
 									}
@@ -816,7 +815,7 @@
 							}
 
 							/* generate tooltip */
-							function taggerInfo(element, em0, emI) {
+							function annotatorInfo(element, em0, emI) {
 								var eval = element.getAttribute("data-eval")
 								switch (eval) {
 									case "correct":
@@ -842,26 +841,26 @@
 								return isUndefined(n) || n == null || n == "";
 							}
 
-							// map from entity to tagger to element
+							// map from entity to annotator to element
 							var entityToElements = new Array();
-							for(var i=0; i<taggers.length; i++) {
+							for(var i=0; i<annotators.length; i++) {
 								entityToElements.push(new Array());
 							}
-							/* initialize tagger spans (onclick, associated entities, tagger info) */
+							/* initialize annotator spans (onclick, associated entities, annotator info) */
 							for(var i=0; i<markSpans.length; i++) {
 								var goldEntity = markSpans[i].getAttribute("data-entity0");
 								put(entityToElements[0], goldEntity, markSpans[i]);
 
-								var taggerSpans = markSpans[i].querySelectorAll("tr.tagger, tr.combined");
+								var annotatorSpans = markSpans[i].querySelectorAll("tr.annotator, tr.combined");
 								// TODO: workaround for highlighting in noAnno
-								for(var j=0; j<taggerSpans.length; j++) {
-									var index = taggerSpans[j].getAttribute("data-index");
-									var thisEntity = taggerSpans[j].getAttribute("data-entity");
+								for(var j=0; j<annotatorSpans.length; j++) {
+									var index = annotatorSpans[j].getAttribute("data-index");
+									var thisEntity = annotatorSpans[j].getAttribute("data-entity");
 									var hasEntity = !isEmpty(goldEntity) || !isEmpty(thisEntity);
 									if(hasEntity) {
-										taggerSpans[j].title = taggerInfo(taggerSpans[j], goldEntity, thisEntity);
-										taggerSpans[j].onclick = markOnclick;
-										put(entityToElements[index], thisEntity, taggerSpans[j]);
+										annotatorSpans[j].title = annotatorInfo(annotatorSpans[j], goldEntity, thisEntity);
+										annotatorSpans[j].onclick = markOnclick;
+										put(entityToElements[index], thisEntity, annotatorSpans[j]);
 									}
 								}
 							}
@@ -869,7 +868,7 @@
 							// add symbols
 							for(i=0; i < markSpans.length; i++) {
 								var split = markSpans[i].getAttribute("data-split");
-								var children = markSpans[i].getElementsByClassName("tagger");
+								var children = markSpans[i].getElementsByClassName("annotator");
 								
 								var anchor = document.createElement("span");
 								anchor.classList.add("grouped-symbols");
@@ -902,7 +901,7 @@
 											content = "";
 									}
 									index = children[j].getAttribute("data-index");
-									// symbol after each tagger's mention
+									// symbol after each annotator's mention
 									dest = children[j].getElementsByTagName("td")[2];
 									
 									if(!isUndefined(dest)) {
@@ -987,22 +986,26 @@
 				</xsl:for-each>
 				<table class="overlay">
 					<tr class="combined">
+						<!-- opening chain number -->
 						<td>
 							<span class="collapse">
-						<xsl:call-template name="chainImpl">
-							<xsl:with-param name="chain0" select="@chain-before0" />
-						</xsl:call-template>
+								<xsl:call-template name="chainImpl">
+									<xsl:with-param name="chain0" select="@chain-before0" />
+								</xsl:call-template>
 							</span>
 						</td>
 
+						<!-- text -->
 						<td>
 							<span class="collapse">
 								<xsl:value-of select="."/>
 							</span>
 						</td>
-
+						
+						<!-- symbol -->
 						<td><span class="collapse"/></td>
 
+						<!-- closing chain number -->
 						<td>
 							<span class="collapse">
 								<xsl:call-template name="chainImpl">
@@ -1011,15 +1014,13 @@
 							</span>
 						</td>
 					</tr>
-					<!-- <span class="stack"> -->
-						<xsl:apply-templates select="*"/>
-					<!-- </span>-->
+					<xsl:apply-templates select="*"/>
 				</table>
 			</span>
 		</xsl:template>
 
-		<xsl:template match="mark/tagger">
-			<tr class="tagger">
+		<xsl:template match="mark/annotator">
+			<tr class="annotator">
 			<xsl:attribute name="data-eval"><xsl:value-of select="@eval"/></xsl:attribute>
 			<xsl:for-each select='@*'>
 				<xsl:attribute name="data-{name()}"><xsl:value-of select="."/></xsl:attribute>

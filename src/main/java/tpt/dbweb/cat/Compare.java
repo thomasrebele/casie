@@ -177,17 +177,16 @@ public class Compare {
     PrintWriter ps = new PrintWriter(sw);
     try {
       TaggedTextXMLReader ttxr = new TaggedTextXMLReader();
-      ps.append("<taggers>\n");
+      ps.append("<annotators>\n");
       List<Iterator<TaggedText>> ttIts = new ArrayList<>();
-      // load files and print tagger info
+      // load files and print annotator info
       for (int i = 0; i < files.size(); i++) {
         ttIts.add(ttxr.iteratePath(files.get(i)));
-        ps.append("\t<tagger id='" + i + "' file='");
+        ps.append("\t<annotator id='" + i + "' file='");
         ps.append(StringEscapeUtils.escapeXml11(files.get(i).toString()));
         ps.append("'/>\n");
       }
-      ps.append("</taggers>\n");
-
+      ps.append("</annotators>\n");
 
       // print evaluation
       if (evaluations != null) {
@@ -369,16 +368,16 @@ public class Compare {
         addChainInfo("0", evals.get(0), builder);
         builder.append(">");
 
-        // print out individual tagger evaluations
+        // print out individual annotator evaluations
         for (int i = 1; i < mentions.size(); i++) {
-          builder.append("<tagger index='" + i + "'");
+          builder.append("<annotator index='" + i + "'");
           EntityMention em = principalMentions.get(i);
           if (em != null) {
             builder.append(" entity='" + StringEscapeUtils.escapeXml11(em.entity) + "'");
           }
           if (evals.get(i).eval != null) {
             builder.append(" eval='" + evals.get(i).eval + "'");
-            addTaggerInfo(i, evals, principalMentions, builder);
+            addAnnotatorInfo(i, evals, principalMentions, builder);
           }
           addChainInfo(null, evals.get(i), builder);
           // Note: newline character introduces a space between a mark and its before chain annotations
@@ -404,19 +403,11 @@ public class Compare {
     return builder.toString().trim();
   }
 
-  private void addTaggerInfo(int idx, List<MarkEval> evals, List<EntityMention> principalMentions, StringBuilder builder) {
+  private void addAnnotatorInfo(int idx, List<MarkEval> evals, List<EntityMention> principalMentions, StringBuilder builder) {
     if (evals == null || evals.get(idx) == null) {
       return;
     }
     EntityMention emI = principalMentions.get(idx);
-    // TODO: move this to javascript
-    /*EntityMention em0 = principalMentions.get(0);
-
-    if (emI != null && emI.info() != null) {
-      if (emI.info().get("tagger") != null) {
-        taggerInfo += " by tagger " + emI.info().get("tagger");
-      }
-    }*/
 
     if (emI != null && emI.info() != null) {
       for (Entry<String, String> info : emI.info().entrySet()) {
