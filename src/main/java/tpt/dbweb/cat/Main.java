@@ -34,6 +34,9 @@ public class Main {
     @Parameter(names = "--tmp-dir")
     public String tmpDirectory = null;
 
+    @Parameter(names = "--run-rcs", description = "run reference-coreference-scorers")
+    public boolean runReferenceCoreferenceScorers = true;
+
     @ParametersDelegate
     Compare.Options compareOptions = new Compare.Options();
 
@@ -69,16 +72,26 @@ public class Main {
       options.tmpDirectory = System.getProperty("java.io.tmpdir");
     }
 
+    if (options.compareOptions.input.size() < 1) {
+      System.out.println("CAT needs at least one file as input");
+      System.exit(-1);
+    }
+    if (options.compareOptions.input.size() == 1) {
+      options.compareOptions.input.add(options.compareOptions.input.get(0));
+      options.runReferenceCoreferenceScorers = false;
+    }
     List<Path> paths = new ArrayList<>();
     for (String inputFile : options.compareOptions.input) {
       paths.add(Paths.get(inputFile));
     }
 
     // calculate measures of coreference chains
-    ReferenceEvaluator evaluator = new ReferenceEvaluator(options.refEvalOptions);
     List<ComparisonResult> cmp = new ArrayList<>();
-    for (int i = 1; i < paths.size(); i++) {
-      cmp.add(evaluator.compareXMLFiles(paths.get(0), paths.get(i), Paths.get(options.tmpDirectory + "/conll-format/")));
+    if (options.runReferenceCoreferenceScorers) {
+      ReferenceEvaluator evaluator = new ReferenceEvaluator(options.refEvalOptions);
+      for (int i = 1; i < paths.size(); i++) {
+        cmp.add(evaluator.compareXMLFiles(paths.get(0), paths.get(i), Paths.get(options.tmpDirectory + "/conll-format/")));
+      }
     }
 
     // compare files

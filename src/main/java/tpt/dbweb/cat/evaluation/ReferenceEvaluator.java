@@ -66,6 +66,13 @@ public class ReferenceEvaluator {
     this.options = refEvalOptions;
   }
 
+  private void silentDelete(Path path) {
+    try {
+      Files.delete(path);
+    } catch (Exception e) {
+    }
+  }
+
   /**
    * Compares two tagged text XML files.
    * @param goldstandard path to tagged text XML
@@ -94,9 +101,9 @@ public class ReferenceEvaluator {
       Path scorerOutputFile = tmpDirectory.resolve(scorerOutput + ".txt");
       ComparisonResult result = evaluator.compareConllFiles(goldstdConllFile, compareConllFile, scorerOutputFile);
       if (this.options.removeTmpFiles) {
-        Files.delete(goldstdConllFile);
-        Files.delete(compareConllFile);
-        Files.delete(scorerOutputFile);
+        silentDelete(goldstdConllFile);
+        silentDelete(compareConllFile);
+        silentDelete(scorerOutputFile);
       }
       return result;
 
@@ -114,9 +121,9 @@ public class ReferenceEvaluator {
         ComparisonResult singleResult = evaluator.compareConllFiles(goldstdConllFile, compareConllFile, scorerOutputFile);
         if (this.options.removeTmpFiles) {
           try {
-            Files.delete(goldstdConllFile);
-            Files.delete(compareConllFile);
-            Files.delete(scorerOutputFile);
+            silentDelete(goldstdConllFile);
+            silentDelete(compareConllFile);
+            silentDelete(scorerOutputFile);
           } catch (Exception e) {
             e.printStackTrace();
           }

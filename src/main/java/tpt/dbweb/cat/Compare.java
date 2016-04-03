@@ -97,7 +97,7 @@ public class Compare {
   }
 
   public static void compareXML(Options options, List<ComparisonResult> evaluations) throws IOException {
-    if (options.outputFile != null && options.input != null && options.input.size() > 1) {
+    if (options.outputFile != null && options.input != null && options.input.size() > 0) {
       Compare compare = new Compare(new Options());
       List<Path> paths = options.input.stream().map(str -> Paths.get(str)).collect(Collectors.toList());
       compare.compareXML(paths, Paths.get(options.outputFile), evaluations);
@@ -248,7 +248,7 @@ public class Compare {
         ps.println("  </article>");
       }
 
-      if (docEvaluationNotFound && evaluations != null) {
+      if (docEvaluationNotFound && evaluations != null && evaluations.size() > 0) {
         log.warn("available evaluations: {}", evaluations.get(0).docidToMetricToResult.keySet());
       }
     } catch (FileNotFoundException e) {
