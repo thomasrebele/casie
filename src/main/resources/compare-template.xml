@@ -285,6 +285,7 @@
 								}
 
 								annotators = collapseXMLJson(]]><xsl:apply-templates select="articles/annotators" mode="js"/><![CDATA[)["annotator"];
+								metrics = collapseXMLJson(]]><xsl:apply-templates select="articles/metrics" mode="js"/><![CDATA[)["annotator"];
 							}
 						]]>
 					</script>
@@ -387,18 +388,7 @@
 						// execute only once, see mozilla-bug-380828
 						if(!isUndefined(document.getElementsByName)) {
 
-							var evalPerAnno = document.querySelectorAll("span.eval");
-							var metrics = new Array();
-							if(metrics.length==0){
-								for(var i=0;i<evalPerAnno.length;i++){
-									var anno=evalPerAnno[i].getAttribute("data-annotator");
-									var metric=evalPerAnno[i].getAttribute("data-name");
-									if(metrics.includes(metric)==false){
-										metrics.push(metric);
-									}
-								}
-							}
-
+							
 							/** adapted from http://stackoverflow.com/a/19662291/1562506
 								usage example:
 								var img  = initElement(svg,'circle',{
@@ -434,14 +424,7 @@
 								newlabel.innerHTML = label;
 								divId.appendChild(newlabel);
 							}
-							var selectElem = initElement(document.getElementById('selectDiv'),'select',{id:'metricsSel', class:'metric', onchange:'fillEvalTable(this.value);'});
-
-							/*To dynamically create the metrics select*/
-							for(var j=0;j<metrics.length;j++){
-								var option = initElement(selectElem,'option',{value: metrics[j]});
-								option.innerHTML=metrics[j];
-								 
-							}
+							
 
 							/*To dynamically create the annotator checkboxes*/
 							for(var k=1;k<annotators.length;k++){
@@ -473,12 +456,22 @@
 								}
 							  }
 							 }
+							 
+							var metricNames = new Array();
+							for(var i=0;i<metrics[0].metric.length;i++) {
+								var name = metrics[0].metric[i].name;
+								metricNames.push(name);
+							}
+							var selectElem = initElement(document.getElementById('selectDiv'),'select',{id:'metricsSel', class:'metric', onchange:'fillEvalTable(this.value);'});
+
+							/*To dynamically create the metrics select*/
+							for(var j=0;j<metricNames.length;j++){
+								var name = metrics[0].metric[j].name;
+								var option = initElement(selectElem,'option',{value: name});
+								option.innerHTML=name;
+							}
 
 							function fillEvalTable(metric){
-								/*var evalPerAnno = document.querySelectorAll("span.eval");
-								if(evalPerAnno.length == 0) {
-									return;
-									}*/
 								var table = document.getElementById("evalTable");
 								var headerArray=["Annotator", "precision", "recall"];
 								if(document.getElementById("evalTable")!=null){
@@ -503,22 +496,22 @@
 									}
 								}
 								
-								for (var i=0;i<annotators.length;i++) {
+								for (var i=0;i<metrics.length;i++) {
 									var anno=annotators[i]["id"];
 									var row= table.insertRow(-1);
 									var annoCell = row.insertCell(0);
 									annoCell.innerHTML = "Anno "+anno;
 									var precisionCell=null;
 									var recallCell=null;
-									 	for(var j=0;j<evalPerAnno.length;j++){
-											var evMap=evalPerAnno[j];			
-								 			if(evMap.getAttribute("data-annotator")==anno && evMap.getAttribute("data-name")==metric){
-										 		precisionCell= row.insertCell(1);
-												precisionCell.innerHTML = evMap.getAttribute("data-precision");
-												recallCell = row.insertCell(2);
-												recallCell.innerHTML = evMap.getAttribute("data-recall");
-								 			}
-								 		}
+									for(var j=0;j<metrics[i].metric.length;j++){
+										var map=metrics[i].metric[j];
+										if(map["name"]==metric){
+											precisionCell= row.insertCell(1);
+											precisionCell.innerHTML = map["precision"];
+											recallCell = row.insertCell(2);
+											recallCell.innerHTML = map["recall"];
+										}
+									}
 								 	if(precisionCell== null && recallCell==null){
 								 		table.deleteRow(table.getElementsByTagName("TR").length-1);
 									}	
@@ -548,7 +541,7 @@
 								}
 							}
 
-							fillEvalTable(metrics[0]);
+							fillEvalTable(metricNames[0]);
 							
 							function updateDiagram(metric){   
 								var svg =  document.getElementById('mySVG');

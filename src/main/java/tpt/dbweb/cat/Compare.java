@@ -205,7 +205,7 @@ public class Compare {
             }
           }
         }
-        ps.print(printEvaluations(evals));
+        ps.print(printMetrics(evals));
         evals.clear();
       }
 
@@ -236,7 +236,7 @@ public class Compare {
             }
           }
           if (docEvaluationNotFound == false) {
-            ps.print(printEvaluations(evals));
+            ps.print(printMetrics(evals));
           } else {
           }
         } else {
@@ -262,21 +262,21 @@ public class Compare {
     FileUtils.writeStringToFile(out.toFile(), output);
   }
 
-  private String printEvaluations(List<Map<String, EvaluationStatistics>> evaluations) {
+  private String printMetrics(List<Map<String, EvaluationStatistics>> evaluations) {
     StringBuilder sb = new StringBuilder();
-    sb.append("<evaluations>\n");
+    sb.append("<metrics>\n");
     for (int i = 0; i < evaluations.size(); i++) {
       Map<String, EvaluationStatistics> map = evaluations.get(i);
-      sb.append("<evalAnno id='" + i + "'>\n");
+      sb.append("<annotator id='" + i + "'>\n");
       for (String name : map.keySet()) {
-        sb.append("    <evaluation name='" + name + "'");
+        sb.append("    <metric name='" + name + "'");
         EvaluationStatistics es = map.get(name);
         sb.append(" recall='" + es.getRecall() + "'");
         sb.append(" precision='" + es.getPrecision() + "'/>\n");
       }
-      sb.append("</evalAnno>\n");
+      sb.append("</annotator>\n");
     }
-    sb.append("</evaluations>\n");
+    sb.append("</metrics>\n");
     return sb.toString();
   }
 
