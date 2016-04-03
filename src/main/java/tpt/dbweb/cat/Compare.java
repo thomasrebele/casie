@@ -53,10 +53,10 @@ public class Compare {
    */
   public static class Options {
 
-    @Parameter(names = "--compare-input")
-    public List<String> input = null;
+    @Parameter(description = "Input files, treat first as the gold standard")
+    public List<String> input = new ArrayList<>();
 
-    @Parameter(names = "--compare-out")
+    @Parameter(names = "--out")
     public String outputFile = null;
 
     boolean replaceNewlineWithBR = false;

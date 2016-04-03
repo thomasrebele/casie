@@ -144,12 +144,18 @@
 					<style>
 						[data-eval=""] { color: black; }
 						
-						body {
-							height: 100vh;
+						body { height: 100vh; padding: 0px; margin: 0px;}
+						/* using HolyGrail from https://philipwalton.github.io/solved-by-flexbox/demos/holy-grail/ */
+						.grail, .grail-body { display: flex; flex-direction: column; }
+						.grail-content { flex: 1; }
+						.grail-nav { order: 1; }
+						@media ( min-width : 568px) {
+							.grail-body { flex-direction: row; flex: 1; }
+							.grail-content { flex: 1; }
+							.grail-nav { /* 10em is the width of the columns */ flex: 0 0 10em; margin: 0 0 0 10px ;}
 						}
 						#mentionTable{
-						margin-right: 3px;
-						
+							margin-right: 3px;
 						}
 						#content {
 							/* margin-right: 10vw; */
@@ -157,17 +163,19 @@
 							border-style: none;
 							height: 100%;
 							overflow: auto;
+							flex: 1 1 auto;
 						}
 						#eval {
 							/*margin-right: 10vw;
 							height: 25%;
 							overflow: auto;*/
 						}
-						#menuOpt {	
-							height:8%;
-							overflow: auto;
+						#wrapper {
+							display: flex;
+							flex-flow: column;
+							height: 100vh;
 						}
-						#wrapper {	
+						/*#wrapper {	
 							left:0px;
 							margin-right: 17vw;
 							/*margin-right: 15vw;*/
@@ -181,7 +189,7 @@
 							right:0px;
 							/*height:100vh;*/
 							width: 17vw;
-						}
+							}*/
 
 						#annotators {
 						/*	margin-right: 2px;
@@ -200,53 +208,21 @@
 						} 
 
 						/*style for menu navigator*/
-						ul {
+						.titlebar {
 							list-style-type: none;
 							margin: 0;
-							padding: 0;
+							padding: 0.5em;
 							overflow: hidden;
 							background-color: #333;
+							color: white;
+							font-size: 1.5em;
+							font-weight: bold;
 						}
-					 
 
 						li {
 							float: left;
 						}
 
-						li a, .dropbtn {
-							display: inline-block;
-							color: white;
-							text-align: center;
-							padding: 14px 16px;
-							text-decoration: none;
-						}
-
-						li a:hover, .dropdown:hover .dropbtn {
-							background-color: red;
-						}
-
-						li.dropdown {
-							display: inline-block;
-						}
-						/*dropdown for document menu button*/
-						.dropdown-content {
-							display: none;
-							position: absolute;
-							background-color: #f9f9f9;
-							min-width: 160px;
-							box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-							z-index: 1;
-						}
-
-						.dropdown-content a {
-							color: black;
-							padding: 12px 16px;
-							text-decoration: none;
-							display: block;
-							text-align: left;
-						}
-
-						.dropdown-content a:hover {background-color: #f1f1f1}
 
 						.show {display:block;}
 
@@ -309,52 +285,66 @@
 						]]>
 					</script>
 				</head>
-				<body>
-					
-					
-					<div id="wrapper">
-
-						<div  id="menuOpt">
-							<ul>
-
-						 		<li class="dropdown">
-							    <!-- <a href="javascript:void(0)" class="dropbtn" onclick="dropDown('documentButton')">Document</a>
-							    <div class="dropdown-content" id="documentButton">
-							       <select class='menu' id="optDoc" size="2" onchange="document.getElementById('content').onclick()"> 
-										<option value="allArticles" selected="true">All articles</option> 
-										<option value="onePerTime">One at a time</option> 
-									</select>				
-								</div> -->
-						 		</li>
-								<li class="dropdown" >
-								  	<a href="javascript:void(0)" id="modeMenu" class="dropbtn" onclick="dropDown('modeButton')">Mode</a>
-								    <div class="dropdown-content" id="modeButton">
-										<select class='menu' id="optColor" size="2" onchange="updateMode()"> 
-											<option value="annotator">annotator</option> 
-											<option value="eval" selected="true">evaluation</option> 
-									</select>		
-									</div>
-								</li>
-								
-								<li class="dropdown">
-								  	<a href="javascript:void(0)" class="dropbtn" onclick="dropDown('showButton')">Show</a>
-								    <div class="dropdown-content" id="showButton">
-									 	 <label><input id="showSymbols" type="checkbox" name="symbols"  onchange="cssStyle['symbols'].disabled = !this.checked; updateMode();"/>Symbols</label>
-									 <br/>
-									 	<label><input id="showChains" type="checkbox" name="chains" onchange="cssStyle['chains'].disabled = !this.checked; updateMode();"/>Entity numbers</label>
-									  </div>
-								</li>
-							</ul> 
+				<body class="grail">
+					<div class="grail-body">
+					<div id="wrapper" class="grail-content">
+						<div class="titlebar" style="position: relative">
+								CAT: Comparison of Annotations Tool
+								<div style="position: absolute; top:0; bottom:0; right:0;">
+								<svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; top:calc(-0%);right:0;" height="100%" viewBox="0 0 76 50">
+									<ellipse cx="38" cy="27" fill="#fff" stroke="#000" stroke-width=".7" rx="24" ry="22"/>
+									<ellipse cx="32" cy="25" ry="2" rx="2"/>
+									<ellipse cx="44" cy="25" ry="2" rx="2"/>
+									<g stroke="#000">
+										<g fill="none">
+											<path d="M35 27s2-12-3-12c-6 0-7 8-4 12 1 2 7 0 7 0z"/>
+											<path d="M40 27s-2-12 4-12c5 0 6 9 4 12-2 2-8 0-8 0z"/>
+											<path d="M38 34c-5 6-10 3-10 3"/>
+											<path d="M38 34c5 6 10 3 10 3"/>
+										</g>
+										<g fill="#fff">
+											<path d="M36 30c-2 0 2 3 2 3s5-3 2-3z" />
+											<path d="M37 7C26-1 25 1 23 1c-1 1-2 10-3 15"/>
+											<path d="M20 16c0-17 1-20 13-5"/>
+											<path d="M37 7c11-8 13-6 15-6 1 1 2 10 2 15"/>
+											<path d="M54 16c0-17-1-21-12-6"/>
+										</g>
+										<g stroke-width=".5">
+											<path d="M47 34l27 6"/>
+											<path d="M47 31l26-8"/>
+											<path d="M47 32l29-2"/>
+											<path d="M30 34L2 40"/>
+											<path d="M29 31L4 23"/>
+											<path d="M30 33L0 31"/>
+										</g>
+									</g>
+								</svg>
+								</div>
 						</div>
 					
 						<div  id="content">
 							<xsl:apply-templates /> 
 						</div>
 					</div>
-					<div id="wrapper2">
-						<div >	
-								<h3 style="background-color: #333;color:white;"> Annotators </h3>
-							</div>
+					<div id="wrapper2" class="grail-nav">
+						<div>
+							<h3 style="background-color: #333;color:white;"> Options </h3>
+							<!--<select class='menu' id="optDoc" size="2" onchange="document.getElementById('content').onclick()"> 
+								<option value="allArticles" selected="true">All articles</option> 
+								<option value="onePerTime">One at a time</option> 
+							</select>-->
+
+							<select class='menu' id="optColor" size="2" onchange="updateMode()" style="display: none;"> 
+								<option value="annotator">annotator</option> 
+								<option value="eval" selected="true">evaluation</option> 
+							</select>
+							<label><input id="showSymbols" type="checkbox" name="symbols"  onchange="cssStyle['symbols'].disabled = !this.checked; updateMode();"/>Show symbols</label>
+							<br/>
+							<label><input id="showChains" type="checkbox" name="chains" onchange="cssStyle['chains'].disabled = !this.checked; updateMode();"/>Show entity numbers</label>
+						</div>
+						<div>
+							<h3 style="background-color: #333;color:white;"> Annotators </h3>
+						</div>
 						<div id="annotators" xmlns="http://www.w3.org/1999/xhtml">
 						</div>	
 						<div style='border-style: none;' >	
@@ -381,6 +371,7 @@
 								</div> -->
 							</div>
 						</div>
+					</div>
 					</div>
 					
 					<script type="text/javascript">
