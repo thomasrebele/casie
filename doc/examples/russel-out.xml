@@ -343,6 +343,12 @@
 								<option value="annotator">annotator</option> 
 								<option value="eval" selected="true">evaluation</option> 
 							</select>
+							Combine same <select id="optCombine" size="1" onchange="updateMode()"> 
+								<option value="eval" selected="true">colors</option> 
+								<option value="entity">entities</option> 
+							</select>
+							<br/>
+
 							<label><input id="showSymbols" type="checkbox" name="symbols"  onchange="cssStyle['symbols'].disabled = !this.checked; updateMode();"/>Show symbols</label>
 							<br/>
 							<label><input id="showChains" type="checkbox" name="chains" onchange="cssStyle['chains'].disabled = !this.checked; updateMode();"/>Show entity numbers</label>
@@ -687,14 +693,18 @@
 											var base = null;
 											var annotatorSpans = markSpans[i].getElementsByClassName("annotator");
 											// TODO: fix bug if wrongly tagged by second annotator
+											
+											var optCombine = document.getElementById("optCombine");
+											var combineAttribute = "data-" + optCombine.options[optCombine.selectedIndex].value;
 											for(var j=0; j<annotators.length; j++) {
 												if(isEnabled("" + j)) {
+													// always split highlighted spans
 													if(annotatorSpans[j-1].classList.contains("highlight")) {
 														base = "split";
 														break;
 													}
-													var val = annotatorSpans[j-1].getAttribute("data-eval") || "";
-													if( (base || val) != val) {
+													var val = annotatorSpans[j-1].getAttribute(combineAttribute) || "";
+													if( (base == null ? val : base) != val) {
 														base = "split";
 														break;
 													}
@@ -1073,29 +1083,29 @@
 </annotators>
 <metrics>
 <annotator id='0'>
-    <metric name='bcub (macro)' recall='0.87272733' precision='0.9142858'/>
-    <metric name='bcub (micro)' recall='0.87272733' precision='0.9142858'/>
-    <metric name='ceafe (macro)' recall='0.8' precision='0.96000004'/>
-    <metric name='ceafe (micro)' recall='0.8' precision='0.96000004'/>
-    <metric name='ceafm (macro)' recall='0.90909094' precision='0.95238096'/>
-    <metric name='ceafm (micro)' recall='0.90909094' precision='0.95238096'/>
-    <metric name='muc (macro)' recall='0.9375' precision='0.9375'/>
-    <metric name='muc (micro)' recall='0.9375' precision='0.9375'/>
-</annotator>
-<annotator id='1'>
-    <metric name='bcub (macro)' recall='0.7757576' precision='0.83809525'/>
-    <metric name='bcub (micro)' recall='0.7757576' precision='0.83809525'/>
-    <metric name='ceafe (macro)' recall='0.90000004' precision='0.90000004'/>
-    <metric name='ceafe (micro)' recall='0.90000004' precision='0.90000004'/>
+    <metric name='bcub (macro)' recall='0.8' precision='0.9142858'/>
+    <metric name='bcub (micro)' recall='0.8' precision='0.9142858'/>
+    <metric name='ceafe (macro)' recall='0.7814815' precision='0.7814815'/>
+    <metric name='ceafe (micro)' recall='0.7814815' precision='0.7814815'/>
     <metric name='ceafm (macro)' recall='0.8636364' precision='0.9047619'/>
     <metric name='ceafm (micro)' recall='0.8636364' precision='0.9047619'/>
-    <metric name='muc (macro)' recall='0.8125' precision='0.8666667'/>
-    <metric name='muc (micro)' recall='0.8125' precision='0.8666667'/>
+    <metric name='muc (macro)' recall='0.875' precision='0.93333334'/>
+    <metric name='muc (micro)' recall='0.875' precision='0.93333334'/>
+</annotator>
+<annotator id='1'>
+    <metric name='bcub (macro)' recall='0.72121215' precision='0.8428572'/>
+    <metric name='bcub (micro)' recall='0.72121215' precision='0.8428572'/>
+    <metric name='ceafe (macro)' recall='0.8777778' precision='0.75238097'/>
+    <metric name='ceafe (micro)' recall='0.8777778' precision='0.75238097'/>
+    <metric name='ceafm (macro)' recall='0.8181818' precision='0.85714287'/>
+    <metric name='ceafm (micro)' recall='0.8181818' precision='0.85714287'/>
+    <metric name='muc (macro)' recall='0.75' precision='0.85714287'/>
+    <metric name='muc (micro)' recall='0.75' precision='0.85714287'/>
 </annotator>
 </metrics>
   <article id='Bertrand Russel: Early life and background'>
-<mark  split='false' entity0='Bertrand Russell; 1; Bertrand_Russel' chain-before0='(1' chain-after0='1)'><annotator index='1' entity='Bertrand_Russel' eval='correct' chain-before='(1' chain-after='1)'/>
-<annotator index='2' entity='Bertrand_Russel' eval='correct' chain-before='(1' chain-after='1)'/>
+<mark  split='false' entity0='Bertrand Russell; 1; Bertrand_Russel' chain-before0='(1' chain-after0='1)'><annotator index='1' entity='Bernhard_Russel' eval='wrong' chain-before='(7' chain-after='7)'/>
+<annotator index='2' entity='Bernd_Russel' eval='wrong' chain-before='(7' chain-after='7)'/>
 Bertrand Russell</mark>
  was born on 18 May 1872 at Ravenscroft, Trellech, Monmouthshire, into an influential and liberal family of the British aristocracy. <mark  split='true' entity0='Bertrand Russell; 1; Bertrand_Russel' chain-before0='(1,(2' chain-after0='1)'><annotator index='1' entity='Bertrand_Russel' eval='correct' chain-before='(1,(2' chain-after='1)'/>
 <annotator index='2' entity='{John_Russel,Katharine_Russel}' eval='wrong' chain-before='(2' chain-after=''/>
@@ -1173,16 +1183,16 @@ Russell</mark>
  [Source: https://en.wikipedia.org/wiki/Bertrand_Russell]
 <metrics>
 <annotator id='0'>
-    <metric name='bcub' recall='0.87272733' precision='0.9142858'/>
-    <metric name='ceafm' recall='0.90909094' precision='0.95238096'/>
-    <metric name='muc' recall='0.9375' precision='0.9375'/>
-    <metric name='ceafe' recall='0.8' precision='0.96000004'/>
+    <metric name='bcub' recall='0.8' precision='0.9142858'/>
+    <metric name='ceafm' recall='0.8636364' precision='0.9047619'/>
+    <metric name='muc' recall='0.875' precision='0.93333334'/>
+    <metric name='ceafe' recall='0.7814815' precision='0.7814815'/>
 </annotator>
 <annotator id='1'>
-    <metric name='bcub' recall='0.7757576' precision='0.83809525'/>
-    <metric name='ceafm' recall='0.8636364' precision='0.9047619'/>
-    <metric name='muc' recall='0.8125' precision='0.8666667'/>
-    <metric name='ceafe' recall='0.90000004' precision='0.90000004'/>
+    <metric name='bcub' recall='0.72121215' precision='0.8428572'/>
+    <metric name='ceafm' recall='0.8181818' precision='0.85714287'/>
+    <metric name='muc' recall='0.75' precision='0.85714287'/>
+    <metric name='ceafe' recall='0.8777778' precision='0.75238097'/>
 </annotator>
 </metrics>
   </article>

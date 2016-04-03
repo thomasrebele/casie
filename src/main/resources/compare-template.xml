@@ -343,6 +343,12 @@
 								<option value="annotator">annotator</option> 
 								<option value="eval" selected="true">evaluation</option> 
 							</select>
+							Combine same <select id="optCombine" size="1" onchange="updateMode()"> 
+								<option value="eval" selected="true">colors</option> 
+								<option value="entity">entities</option> 
+							</select>
+							<br/>
+
 							<label><input id="showSymbols" type="checkbox" name="symbols"  onchange="cssStyle['symbols'].disabled = !this.checked; updateMode();"/>Show symbols</label>
 							<br/>
 							<label><input id="showChains" type="checkbox" name="chains" onchange="cssStyle['chains'].disabled = !this.checked; updateMode();"/>Show entity numbers</label>
@@ -687,14 +693,18 @@
 											var base = null;
 											var annotatorSpans = markSpans[i].getElementsByClassName("annotator");
 											// TODO: fix bug if wrongly tagged by second annotator
+											
+											var optCombine = document.getElementById("optCombine");
+											var combineAttribute = "data-" + optCombine.options[optCombine.selectedIndex].value;
 											for(var j=0; j<annotators.length; j++) {
 												if(isEnabled("" + j)) {
+													// always split highlighted spans
 													if(annotatorSpans[j-1].classList.contains("highlight")) {
 														base = "split";
 														break;
 													}
-													var val = annotatorSpans[j-1].getAttribute("data-eval") || "";
-													if( (base || val) != val) {
+													var val = annotatorSpans[j-1].getAttribute(combineAttribute) || "";
+													if( (base == null ? val : base) != val) {
 														base = "split";
 														break;
 													}
