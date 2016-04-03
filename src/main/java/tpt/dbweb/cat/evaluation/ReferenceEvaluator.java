@@ -20,6 +20,8 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.beust.jcommander.Parameter;
+
 import tpt.dbweb.cat.datatypes.Fraction;
 import tpt.dbweb.cat.datatypes.TaggedText;
 import tpt.dbweb.cat.io.ConllWriter;
@@ -34,12 +36,17 @@ public class ReferenceEvaluator {
 
   private static Logger log = LoggerFactory.getLogger(ReferenceEvaluator.class);
 
-  public class Options {
+  public static class Options {
 
+    @Parameter(names = "--single-file", description = "put all articles in one file for reference-coreference-scorers")
     public boolean singleFile = true;
+
+    @Parameter(names = "--remove-tmp-files", description = "temporarily generated files will get removed after execution")
+    public boolean removeTmpFiles = true;
+
   }
 
-  private final Options options = new Options();
+  private Options options = new Options();
 
   // create a regex to parse
   private Pattern resultPattern = null;
@@ -55,32 +62,43 @@ public class ReferenceEvaluator {
     resultPattern = Pattern.compile(recallPattern + precisionPattern + f1Pattern + ".*");
   }
 
+  public ReferenceEvaluator(Options refEvalOptions) {
+    this.options = refEvalOptions;
+  }
+
   /**
    * Compares two tagged text XML files.
    * @param goldstandard path to tagged text XML
    * @param compare path to tagged text XML
    * @param tmpDirectory where to store generated files
    * @return
+   * @throws IOException 
    */
-  public ComparisonResult compareXMLFiles(Path goldstandard, Path compare, Path tmpDirectory) {
+  public ComparisonResult compareXMLFiles(Path goldstandard, Path compare, Path tmpDirectory) throws IOException {
     TaggedTextXMLReader.Options options = new TaggedTextXMLReader.Options();
     TaggedTextXMLReader reader = new TaggedTextXMLReader(options);
     ConllWriter conll = new ConllWriter();
     ReferenceEvaluator evaluator = new ReferenceEvaluator();
 
-    ComparisonResult result = new ComparisonResult();
     // many files
     List<TaggedText> goldstd = reader.getTaggedText(goldstandard), cmp = reader.getTaggedText(compare);
     String scorerOutput = goldstandard.getFileName() + "-" + compare.getFileName() + "-scorer-output";
     if (this.options.singleFile) {
-      log.warn("using only one thread");
+      log.info("using only one thread, try to use the split file option to speed things up");
       Path goldstdConllFile = tmpDirectory.resolve(goldstandard.getFileName() + ".conll");
       conll.writeTTList(goldstd, goldstdConllFile);
 
       Path compareConllFile = tmpDirectory.resolve(compare.getFileName() + ".conll");
       conll.writeTTList(cmp, compareConllFile);
 
-      return evaluator.compareConllFiles(goldstdConllFile, compareConllFile, tmpDirectory.resolve(scorerOutput + ".txt"));
+      Path scorerOutputFile = tmpDirectory.resolve(scorerOutput + ".txt");
+      ComparisonResult result = evaluator.compareConllFiles(goldstdConllFile, compareConllFile, scorerOutputFile);
+      if (this.options.removeTmpFiles) {
+        Files.delete(goldstdConllFile);
+        Files.delete(compareConllFile);
+        Files.delete(scorerOutputFile);
+      }
+      return result;
 
     } else {
       int cnt = Math.min(goldstd.size(), cmp.size());
@@ -92,13 +110,25 @@ public class ReferenceEvaluator {
         Path compareConllFile = tmpDirectory.resolve(compare.getFileName() + "-" + id);
         conll.writeTT(cmp.get(i), compareConllFile);
 
-        return evaluator.compareConllFiles(goldstdConllFile, compareConllFile,
-            tmpDirectory.resolve(scorerOutput + Thread.currentThread().getName() + ".txt"));
+        Path scorerOutputFile = tmpDirectory.resolve(scorerOutput + Thread.currentThread().getName() + ".txt");
+        ComparisonResult singleResult = evaluator.compareConllFiles(goldstdConllFile, compareConllFile, scorerOutputFile);
+        if (this.options.removeTmpFiles) {
+          try {
+            Files.delete(goldstdConllFile);
+            Files.delete(compareConllFile);
+            Files.delete(scorerOutputFile);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        }
+
+        return singleResult;
       }).collect(Collectors.toList());
 
+      ComparisonResult result = new ComparisonResult();
       lst.forEach(cr -> result.merge(cr));
+      return result;
     }
-    return result;
   }
 
   /**
@@ -116,7 +146,9 @@ public class ReferenceEvaluator {
     if (scorerOutput != null) {
       try {
         FileUtils.writeStringToFile(scorerOutput.toFile(), str);
-        log.info("wrote scorer output to {}", scorerOutput);
+        if (!options.removeTmpFiles) {
+          log.debug("wrote scorer output to {}", scorerOutput);
+        }
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -267,7 +299,7 @@ public class ReferenceEvaluator {
     return result;
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     ReferenceEvaluator eval = new ReferenceEvaluator();
 
     /*ComparisonResult r = eval.compareConllFiles(Paths.get("result/ace2004/roth-dev/dev/conll-format/ace2004-aida2014-with-nme.xml"),
