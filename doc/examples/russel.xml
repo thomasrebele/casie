@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<?xml-stylesheet type='text/xsl' href='trafo.xsl' ?>
+<articles>
+	<article id='Bertrand Russel: Early life and background'>
+		<mark entity='Bertrand_Russel'>Bertrand Russell</mark> was born on 18 May 1872 at Ravenscroft, Trellech, Monmouthshire, into an influential and liberal family of the British aristocracy. <mark entity="{John_Russel,Katharine_Russel}"><mark entity='Bertrand_Russel'>His</mark> parents</mark>, <mark entity="{John_Russel,Katharine_Russel}"><mark entity="John_Russel">Viscount</mark> and <mark entity="Katharine_Russell">Viscountess Amberley</mark></mark>, were radical for <mark entity="{John_Russel,Katharine_Russel}">their</mark> times. <mark entity="John_Russel">Lord Amberley</mark> consented to <mark entity="Katharine_Russell"><mark entity="John_Russel">his</mark> wife</mark>'s affair with <mark entity="{John_Russel,Katharine_Russel}">their</mark> children's tutor, the biologist <mark entity="Douglas_Spalding">Douglas Spalding</mark>. <mark entity="{John_Russel,Katharine_Russel}">Both</mark> were early advocates of birth control at a time when this was considered scandalous.
+
+		<br/>
+		<mark entity="John_Russel">Lord Amberley</mark> was an atheist and <mark entity="John_Russel">his</mark> atheism was evident when <mark entity="John_Russel">he</mark> asked the philosopher <mark entity="John_Stuart_Mill">John Stuart Mill</mark> to act as <mark entity='Bertrand_Russel'>Russell</mark>'s secular godfather. <mark entity="John_Stuart_Mill">Mill</mark> died the year after <mark entity='Bertrand_Russel'>Russell</mark>'s birth, but <mark entity="John_Stuart_Mill">his</mark> writings had a great effect on <mark entity='Bertrand_Russel'>Russell</mark>'s life.
+
+		<br/>
+		[Source: https://en.wikipedia.org/wiki/Bertrand_Russell]
+	</article>
+</articles>
