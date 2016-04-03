@@ -96,7 +96,7 @@ public class Compare {
     String chainAfter;
   }
 
-  public static void compareXML(Options options, ComparisonResult evaluations) throws IOException {
+  public static void compareXML(Options options, List<ComparisonResult> evaluations) throws IOException {
     if (options.outputFile != null && options.input != null && options.input.size() > 1) {
       Compare compare = new Compare(new Options());
       List<Path> paths = options.input.stream().map(str -> Paths.get(str)).collect(Collectors.toList());
@@ -169,7 +169,7 @@ public class Compare {
    * @param evaluations
    * @throws IOException
    */
-  public void compareXML(List<Path> files, Path out, ComparisonResult evaluations) throws IOException {
+  public void compareXML(List<Path> files, Path out, List<ComparisonResult> evaluations) throws IOException {
     log.info("comparing {}; writing output to {}", files, out);
     boolean docEvaluationNotFound = false;
 
@@ -189,18 +189,24 @@ public class Compare {
       ps.append("</annotators>\n");
 
       // print evaluation
+      List<Map<String, EvaluationStatistics>> evals = new ArrayList<>();
+      Map<String, EvaluationStatistics> eval;
       if (evaluations != null) {
-        ComparisonResult combinedEvaluations = evaluations.combine();
-        Map<String, EvaluationStatistics> evals = new TreeMap<>();
+        for (int i = 0; i < evaluations.size(); i++) {
+          ComparisonResult combinedEvaluations = evaluations.get(i).combine();
+          eval = new TreeMap<>();
+          evals.add(eval);
 
-        // type is macro / micro
-        for (String type : combinedEvaluations.docidToMetricToResult.keySet()) {
-          Map<String, EvaluationStatistics> metricToResult = combinedEvaluations.docidToMetricToResult.get(type);
-          for (String metric : metricToResult.keySet()) {
-            evals.put(metric + " (" + type + ")", metricToResult.get(metric));
+          // type is macro / micro
+          for (String type : combinedEvaluations.docidToMetricToResult.keySet()) {
+            Map<String, EvaluationStatistics> metricToResult = combinedEvaluations.docidToMetricToResult.get(type);
+            for (String metric : metricToResult.keySet()) {
+              eval.put(metric + " (" + type + ")", metricToResult.get(metric));
+            }
           }
         }
         ps.print(printEvaluations(evals));
+        evals.clear();
       }
 
       // print comparison of articles
@@ -221,11 +227,17 @@ public class Compare {
 
         // print evaluation of article
         if (evaluations != null) {
-          Map<String, EvaluationStatistics> metricToResult = evaluations.docidToMetricToResult.get(tts.get(0).id);
-          if (metricToResult != null) {
-            ps.print(printEvaluations(metricToResult));
+          docEvaluationNotFound = true;
+          for (int i = 0; i < evaluations.size(); i++) {
+            eval = evaluations.get(i).docidToMetricToResult.get(tts.get(0).id);
+            evals.add(eval);
+            if (eval != null) {
+              docEvaluationNotFound = false;
+            }
+          }
+          if (docEvaluationNotFound == false) {
+            ps.print(printEvaluations(evals));
           } else {
-            docEvaluationNotFound = true;
           }
         } else {
           docEvaluationNotFound = true;
@@ -237,7 +249,7 @@ public class Compare {
       }
 
       if (docEvaluationNotFound && evaluations != null) {
-        log.warn("available evaluations: {}", evaluations.docidToMetricToResult.keySet());
+        log.warn("available evaluations: {}", evaluations.get(0).docidToMetricToResult.keySet());
       }
     } catch (FileNotFoundException e) {
       log.error("file not found: {}", e.getMessage());
@@ -250,16 +262,21 @@ public class Compare {
     FileUtils.writeStringToFile(out.toFile(), output);
   }
 
-  private String printEvaluations(Map<String, EvaluationStatistics> evaluations) {
+  private String printEvaluations(List<Map<String, EvaluationStatistics>> evaluations) {
     StringBuilder sb = new StringBuilder();
-    sb.append("\n  <evaluations>\n");
-    for (String name : evaluations.keySet()) {
-      sb.append("    <evaluation name='" + name + "'");
-      EvaluationStatistics es = evaluations.get(name);
-      sb.append(" recall='" + es.getRecall() + "'");
-      sb.append(" precision='" + es.getPrecision() + "'/>\n");
+    sb.append("<evaluations>\n");
+    for (int i = 0; i < evaluations.size(); i++) {
+      Map<String, EvaluationStatistics> map = evaluations.get(i);
+      sb.append("<evalAnno id='" + i + "'>\n");
+      for (String name : map.keySet()) {
+        sb.append("    <evaluation name='" + name + "'");
+        EvaluationStatistics es = map.get(name);
+        sb.append(" recall='" + es.getRecall() + "'");
+        sb.append(" precision='" + es.getPrecision() + "'/>\n");
+      }
+      sb.append("</evalAnno>\n");
     }
-    sb.append("  </evaluations>\n");
+    sb.append("</evaluations>\n");
     return sb.toString();
   }
 

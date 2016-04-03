@@ -152,7 +152,7 @@
 						@media ( min-width : 568px) {
 							.grail-body { flex-direction: row; flex: 1; }
 							.grail-content { flex: 1; }
-							.grail-nav { /* 10em is the width of the columns */ flex: 0 0 10em; margin: 0 0 0 10px ;}
+							.grail-nav { /* 10em is the width of the columns */ flex: 0 0 10em; margin: 0 10px 0 10px ;}
 						}
 						#mentionTable{
 							margin-right: 3px;
@@ -162,8 +162,12 @@
 							margin-left: 1vw; 
 							border-style: none;
 							height: 100%;
+							max-height: 70vh;
 							overflow: auto;
 							flex: 1 1 auto;
+						}
+						@media( min-width : 568px) {
+							#content { max-height: 100vh; }
 						}
 						#eval {
 							/*margin-right: 10vw;
@@ -322,7 +326,7 @@
 								</div>
 						</div>
 					
-						<div  id="content">
+						<div id="content">
 							<xsl:apply-templates /> 
 						</div>
 					</div>
@@ -430,7 +434,6 @@
 								newlabel.innerHTML = label;
 								divId.appendChild(newlabel);
 							}
-							/*var selectElem = initElement(document.getElementById('selectDiv'),'select',{id:'metricsSel', class:'metric', onchange:'updateDiagram(this.value);fillEvalTable(this.value);'});*/
 							var selectElem = initElement(document.getElementById('selectDiv'),'select',{id:'metricsSel', class:'metric', onchange:'fillEvalTable(this.value);'});
 
 							/*To dynamically create the metrics select*/
@@ -475,7 +478,7 @@
 								/*var evalPerAnno = document.querySelectorAll("span.eval");
 								if(evalPerAnno.length == 0) {
 									return;
-								}*/
+									}*/
 								var table = document.getElementById("evalTable");
 								var headerArray=["Annotator", "precision", "recall"];
 								if(document.getElementById("evalTable")!=null){
@@ -489,8 +492,6 @@
 								}
 								
 								if(document.getElementById("evalTable")==null){
-									
-									
 									table=document.createElement("table");
 									table.setAttribute("id", "evalTable");	
 									document.getElementById("tableDiv").appendChild(table);
@@ -500,14 +501,13 @@
 										var cell = row.insertCell(i);
 										cell.innerHTML = "<b>"+headerArray[i] +"</b>";
 									}
-
 								}
 								
 								for (var i=0;i<annotators.length;i++) {
-								 	var anno=annotators[i]["id"];
-								 	var row= table.insertRow(-1);
+									var anno=annotators[i]["id"];
+									var row= table.insertRow(-1);
 									var annoCell = row.insertCell(0);
-									annoCell.innerHTML = "anno "+anno;
+									annoCell.innerHTML = "Anno "+anno;
 									var precisionCell=null;
 									var recallCell=null;
 									 	for(var j=0;j<evalPerAnno.length;j++){
@@ -770,15 +770,14 @@
 									return;
 								}
 								var ancestor = ancestorWithClass(e.target, "annotator");
+								if(ancestor == null) return;
 								ancestor.classList.add("selected");
 								var index = ancestor.getAttribute("data-index");
 								var thisEntity = ancestor.getAttribute("data-entity");
 								var goldEntity = ancestorWithClass(e.target, "mark").getAttribute("data-entity0");
-								console.log(e.target, thisEntity);
 								// determine which elements to select
 								var elements = [].concat(entityToElements[index][thisEntity]);
 								elements = elements.concat(entityToElements[0][goldEntity]);
-								console.log("elements", elements);
 								// highlight selection
 								for(i=0; i < elements.length; i++) {
 									if(!isUndefined(elements[i])) {
@@ -786,7 +785,6 @@
 										if(!elements[i].classList.contains("annotator")) {
 											annotatorSpans = elements[i].querySelectorAll(".annotator[data-index='" + index + "']");
 										}
-										console.log(annotatorSpans);
 										for(var j=0; j<annotatorSpans.length; j++) {
 											var annotatorSpan = annotatorSpans[j];
 											annotatorSpan.classList.add("highlight");
@@ -794,8 +792,6 @@
 												annotatorSpan.classList.add("rightchain");
 											}
 
-											console.log(ancestor.getAttribute("data-eval"))
-											console.log(ancestor.getAttribute("data-eval") != "correct")
 											if(annotatorSpan.getAttribute("data-entity") == thisEntity && ancestor.getAttribute("data-eval") != "correct") {
 												annotatorSpan.classList.add("wrongchain");
 											}
