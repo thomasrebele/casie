@@ -296,7 +296,7 @@
 						<div class="titlebar" style="position: relative">
 								CAT: Comparison of Annotations Tool
 								<div style="position: absolute; top:0; bottom:0; right:0;">
-								<svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; top:calc(-0%);right:0;" height="100%" viewBox="0 0 76 50">
+								<svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; top:calc(+15%);right:0;" height="70%" viewBox="0 0 76 50">
 									<ellipse cx="38" cy="27" fill="#fff" stroke="#000" stroke-width=".7" rx="24" ry="22"/>
 									<ellipse cx="32" cy="25" ry="2" rx="2"/>
 									<ellipse cx="44" cy="25" ry="2" rx="2"/>
