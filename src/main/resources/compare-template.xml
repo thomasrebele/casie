@@ -24,7 +24,7 @@
 			
 			<html xmlns:x="http://telecom-paristech.fr/namespace/">
 				<head>
-					<title>CAT</title>
+					<title>Jecca</title>
 					<meta charset="UTF-8" />
 					<style>
 						.stack {display: inline-flex; flex-direction: column;}
@@ -298,7 +298,7 @@
 					<div class="grail-body">
 					<div id="wrapper" class="grail-content">
 						<div class="titlebar" style="position: relative">
-								CAT: Comparison of Annotations Tool
+								Jecca
 								<div style="position: absolute; top:0; bottom:0; right:0;">
 								<svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; top:calc(+15%);right:0;" height="70%" viewBox="0 0 76 50">
 									<ellipse cx="38" cy="27" fill="#fff" stroke="#000" stroke-width=".7" rx="24" ry="22"/>

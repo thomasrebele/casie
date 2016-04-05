@@ -24,7 +24,7 @@
 			
 			<html xmlns:x="http://telecom-paristech.fr/namespace/">
 				<head>
-					<title>CAT</title>
+					<title>Jecca</title>
 					<meta charset="UTF-8" />
 					<style>
 						.stack {display: inline-flex; flex-direction: column;}
@@ -102,8 +102,8 @@
 						[data-index="2"].highlight .symbol { color: <xsl:value-of select="$color2"/>; }
 						/* styles for evaluation */
 						[data-eval="correct"].highlight { color: green; }
-						[data-eval="toomuch"].highlight { color: pink; }
-						[data-eval="forgot"].highlight { color: DarkSlateBlue; }
+						[data-eval="toomuch"].highlight { color: red; }
+						[data-eval="missing"].highlight { color: DarkSlateBlue; }
 						[data-eval="wrong"].highlight { color: red; }
 					</style>
 					<style>
@@ -121,10 +121,14 @@
 					<style>
 						styleid { content: 'highlighting:enabled'; }
 						[data-index] { color: gray; }
+						.highlightMode { display: initial; }
+						.defaultMode { display: none; }
 					</style>
 					<style>
 						styleid { content: 'highlighting:disabled'; }
 						.combined { text-shadow: .5px 0px .0px, -.5px 0px .0px; color: black; }
+						.highlightMode { display: none; }
+						.defaultMode { display: initial; }
 					</style>
 					<style>
 						styleid { content: 'symbols'; }
@@ -294,7 +298,7 @@
 					<div class="grail-body">
 					<div id="wrapper" class="grail-content">
 						<div class="titlebar" style="position: relative">
-								CAT: Comparison of Annotations Tool
+								Jecca
 								<div style="position: absolute; top:0; bottom:0; right:0;">
 								<svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; top:calc(+15%);right:0;" height="70%" viewBox="0 0 76 50">
 									<ellipse cx="38" cy="27" fill="#fff" stroke="#000" stroke-width=".7" rx="24" ry="22"/>
@@ -359,10 +363,8 @@
 						<div id="annotators" xmlns="http://www.w3.org/1999/xhtml">
 						</div>	
 						<div style='border-style: none;' >	
-							<div >	
-								<h3 style="background-color: #333;color:white;"> Evaluation </h3>
-							</div>
 							<div id="eval" >	
+								<h3 style="background-color: #333;color:white;"> Evaluation </h3>
 								<div  id="evalTableSelection"> 
 									<div   id="selectDiv" >
 		 
@@ -382,6 +384,20 @@
 								</div> -->
 							</div>
 						</div>
+						<div style="font-size: 70%; margin-top: 2ex;">
+							* colors:
+							<span class="defaultMode"><br/>
+								<span data-eval="correct">correct</span><br/>
+								<span data-eval="wrong">wrong</span><br/>
+								<span data-eval="missing">missing</span>
+							</span>
+							<span class="highlightMode"><br/>
+								<span class="annotator highlight rightchain">in right chain</span><br/>
+								<span class="annotator highlight wrongchain">in wrong chain</span><br/>
+								<span class="annotator highlight rightchain wrongchain">in both chains</span>
+							</span>
+
+						</div>
 					</div>
 					</div>
 					
@@ -393,7 +409,7 @@
 						}
 						// execute only once, see mozilla-bug-380828
 						if(!isUndefined(document.getElementsByName)) {
-
+							var content = document.getElementById("content");
 							
 							/** adapted from http://stackoverflow.com/a/19662291/1562506
 								usage example:
@@ -462,19 +478,21 @@
 								}
 							  }
 							 }
-							 
-							var metricNames = new Array();
-							for(var i=0;i<metrics[0].metric.length;i++) {
-								var name = metrics[0].metric[i].name;
-								metricNames.push(name);
-							}
-							var selectElem = initElement(document.getElementById('selectDiv'),'select',{id:'metricsSel', class:'metric', onchange:'fillEvalTable(this.value);'});
 
-							/*To dynamically create the metrics select*/
-							for(var j=0;j<metricNames.length;j++){
-								var name = metrics[0].metric[j].name;
-								var option = initElement(selectElem,'option',{value: name});
-								option.innerHTML=name;
+							if(!isUndefined(metrics)) {
+								var metricNames = new Array();
+								for(var i=0;i<metrics[0].metric.length;i++) {
+									var name = metrics[0].metric[i].name;
+									metricNames.push(name);
+								}
+								var selectElem = initElement(document.getElementById('selectDiv'),'select',{id:'metricsSel', class:'metric', onchange:'fillEvalTable(this.value);'});
+
+								/*To dynamically create the metrics select*/
+								for(var j=0;j<metricNames.length;j++){
+									var name = metrics[0].metric[j].name;
+									var option = initElement(selectElem,'option',{value: name});
+									option.innerHTML=name;
+								}
 							}
 
 							function fillEvalTable(metric){
@@ -546,8 +564,12 @@
 									td.style.backgroundColor = "yellow";
 								}
 							}
-
-							fillEvalTable(metricNames[0]);
+							if(!isUndefined(metricNames)) {
+								fillEvalTable(metricNames[0]);
+							}
+							else {
+								document.getElementById("eval").style.display = "none";
+							}
 							
 							function updateDiagram(metric){   
 								var svg =  document.getElementById('mySVG');
@@ -648,7 +670,7 @@
 							var markSpans = document.querySelectorAll("span.mark");
 							function updateMode() {
 								var coloringGroup;
-								var highlightMode = document.querySelectorAll(".highlight").length > 0;
+								var highlightMode = content.querySelectorAll(".highlight").length > 0;
 								var optColor = document.getElementById("optColor");
 								if(highlightMode) {
 									coloringGroup = "coloringHighlight";
@@ -718,15 +740,6 @@
 							}
 							updateMode();
 
-							/* deselect highlight on click */
-							document.getElementById("content").onclick = function() {
-								selection = document.querySelectorAll(".highlight")
-								for(var i=0; i<selection.length; i++) {
-									selection[i].classList.remove("highlight");
-								}
-								updateMode();
-							}
-
 							/* add a value to the values of a key (in a multi-map) */
 							function put(map, key, value) {
 								if(key != null) {
@@ -751,23 +764,28 @@
 								return ancestor;
 							}
 
-							function removeClass(clazz) {
-								selection = document.querySelectorAll("." + clazz)
+							function removeClass(element, clazz) {
+								selection = element.querySelectorAll("." + clazz)
 								for(i=0; i<selection.length; i++) {
 									selection[i].classList.remove(clazz);
 								}
 							}
 
+							/* deselect highlight on click */
+							content.onclick = function() {
+								removeClass(content, "highlight");
+								updateMode();
+							}
 							/* highlight chains on click on a mention */
 							function markOnclick(e) {
 								e.stopPropagation();
 								// check whether user has selected this element
 								var wasHighlighted = ancestorWithClass(e.target, "highlight") != null;
 								// deselect
-								removeClass("selected");
-								removeClass("highlight");
-								removeClass("rightchain");
-								removeClass("wrongchain");
+								removeClass(content, "selected");
+								removeClass(content, "highlight");
+								removeClass(content, "rightchain");
+								removeClass(content, "wrongchain");
 								if(wasHighlighted) {
 									updateMode();
 									return;
@@ -815,7 +833,7 @@
 									case "toomuch":
 										result = "should not be annotated, found '" + emI + "'";
 										break;
-									case "forgot":
+									case "missing":
 										result = "should have been annotated with '" + em0 + "'";
 										break;
 									case "wrong":
@@ -871,24 +889,24 @@
 								
 								for(var j=0; j<children.length; j++) {
 									// create symbol
-									var content, index, dest, eval;
+									var toolTipText, index, dest, eval;
 									eval = children[j].getAttribute("data-eval");
 									switch(eval) {
 										// TODO: symbols
 										case "correct":
-											content = "&#x2714;"; // ✔
+											toolTipText = "&#x2714;"; // ✔
 											break;
 										case "toomuch":
-											content = "&#x2718;"; // TODO: another symbol?
+											toolTipText = "&#x2718;"; // TODO: another symbol?
 											break;
-										case "forgot":
-											content = "&quest;"; //"&#x2753;"; // ❓
+										case "missing":
+											toolTipText = "&quest;"; //"&#x2753;"; // ❓
 											break;
 										case "wrong":
-											content = "&#x2718;"; // ✘
+											toolTipText= "&#x2718;"; // ✘
 											break;
 										default:
-											content = "";
+											toolTipText = "";
 									}
 									index = children[j].getAttribute("data-index");
 									// symbol after each annotator's mention
@@ -901,11 +919,11 @@
 										} else {
 											initElement(parent,'span',{
 												class:"symbol single-symbol", 
-												}, content);
+												}, toolTipText);
 										}
 										initElement(dest,'span',{
 											class:"symbol single-symbol", 
-											"data-index":index}, content);
+											"data-index":index}, toolTipText);
 									}
 								}
 							}
