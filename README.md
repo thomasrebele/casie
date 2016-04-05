@@ -1,9 +1,9 @@
-CAT: Compare Annotations Tool
+Jecca: Joint Evaluation and Comparison of Co-reference and Annotations
 ==============
 
 About
 --------------
-CAT allows you to compare two or more annotated texts.
+Jecca allows you to compare two or more annotated texts.
 
 Setup
 --------------
