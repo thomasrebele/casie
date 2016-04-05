@@ -103,7 +103,7 @@
 						/* styles for evaluation */
 						[data-eval="correct"].highlight { color: green; }
 						[data-eval="toomuch"].highlight { color: pink; }
-						[data-eval="forgot"].highlight { color: DarkSlateBlue; }
+						[data-eval="missing"].highlight { color: DarkSlateBlue; }
 						[data-eval="wrong"].highlight { color: red; }
 					</style>
 					<style>
@@ -359,10 +359,8 @@
 						<div id="annotators" xmlns="http://www.w3.org/1999/xhtml">
 						</div>	
 						<div style='border-style: none;' >	
-							<div >	
-								<h3 style="background-color: #333;color:white;"> Evaluation </h3>
-							</div>
 							<div id="eval" >	
+								<h3 style="background-color: #333;color:white;"> Evaluation </h3>
 								<div  id="evalTableSelection"> 
 									<div   id="selectDiv" >
 		 
@@ -462,19 +460,21 @@
 								}
 							  }
 							 }
-							 
-							var metricNames = new Array();
-							for(var i=0;i<metrics[0].metric.length;i++) {
-								var name = metrics[0].metric[i].name;
-								metricNames.push(name);
-							}
-							var selectElem = initElement(document.getElementById('selectDiv'),'select',{id:'metricsSel', class:'metric', onchange:'fillEvalTable(this.value);'});
 
-							/*To dynamically create the metrics select*/
-							for(var j=0;j<metricNames.length;j++){
-								var name = metrics[0].metric[j].name;
-								var option = initElement(selectElem,'option',{value: name});
-								option.innerHTML=name;
+							if(!isUndefined(metrics)) {
+								var metricNames = new Array();
+								for(var i=0;i<metrics[0].metric.length;i++) {
+									var name = metrics[0].metric[i].name;
+									metricNames.push(name);
+								}
+								var selectElem = initElement(document.getElementById('selectDiv'),'select',{id:'metricsSel', class:'metric', onchange:'fillEvalTable(this.value);'});
+
+								/*To dynamically create the metrics select*/
+								for(var j=0;j<metricNames.length;j++){
+									var name = metrics[0].metric[j].name;
+									var option = initElement(selectElem,'option',{value: name});
+									option.innerHTML=name;
+								}
 							}
 
 							function fillEvalTable(metric){
@@ -546,8 +546,12 @@
 									td.style.backgroundColor = "yellow";
 								}
 							}
-
-							fillEvalTable(metricNames[0]);
+							if(!isUndefined(metricNames)) {
+								fillEvalTable(metricNames[0]);
+							}
+							else {
+								document.getElementById("eval").style.display = "none";
+							}
 							
 							function updateDiagram(metric){   
 								var svg =  document.getElementById('mySVG');
@@ -815,7 +819,7 @@
 									case "toomuch":
 										result = "should not be annotated, found '" + emI + "'";
 										break;
-									case "forgot":
+									case "missing":
 										result = "should have been annotated with '" + em0 + "'";
 										break;
 									case "wrong":
@@ -881,7 +885,7 @@
 										case "toomuch":
 											content = "&#x2718;"; // TODO: another symbol?
 											break;
-										case "forgot":
+										case "missing":
 											content = "&quest;"; //"&#x2753;"; // ❓
 											break;
 										case "wrong":
