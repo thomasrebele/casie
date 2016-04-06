@@ -945,7 +945,8 @@
 		<!-- process articles -->
 		<xsl:template match="articles/article">
 			<h2>
-				Article <xsl:value-of select="@id"/>
+			<xsl:if test="@id=''">Article </xsl:if>
+				<xsl:value-of select="@id"/>
 			</h2>
 			<div>
 				<xsl:apply-templates />
