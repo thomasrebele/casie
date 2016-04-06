@@ -1112,33 +1112,33 @@
     <metric name='muc (micro)' recall='0.75' precision='0.75'/>
 </annotator>
 <annotator id='1'>
-    <metric name='bcub (macro)' recall='0.5' precision='0.5'/>
-    <metric name='bcub (micro)' recall='1.0' precision='1.0'/>
-    <metric name='ceafe (macro)' recall='0.5' precision='0.5'/>
-    <metric name='ceafe (micro)' recall='1.0' precision='1.0'/>
-    <metric name='ceafm (macro)' recall='0.5' precision='0.5'/>
-    <metric name='ceafm (micro)' recall='1.0' precision='1.0'/>
-    <metric name='muc (macro)' recall='0.25' precision='0.25'/>
-    <metric name='muc (micro)' recall='1.0' precision='1.0'/>
+    <metric name='bcub (macro)' recall='0.42708334' precision='0.5'/>
+    <metric name='bcub (micro)' recall='0.75' precision='1.0'/>
+    <metric name='ceafe (macro)' recall='0.48214287' precision='0.48214287'/>
+    <metric name='ceafe (micro)' recall='0.95238096' precision='0.95238096'/>
+    <metric name='ceafm (macro)' recall='0.45833334' precision='0.5'/>
+    <metric name='ceafm (micro)' recall='0.85714287' precision='1.0'/>
+    <metric name='muc (macro)' recall='0.1875' precision='0.25'/>
+    <metric name='muc (micro)' recall='0.75' precision='1.0'/>
 </annotator>
 </metrics>
   <article id='Tutorial'>
-Welcome to the JESICAT tutorial. Have a look at the words in boldface like <mark  split='false' entity0='Obama; 1; Barack_Obama' chain-before0='(1' chain-after0='1)'><annotator index='1' entity='Barack_Obama' eval='correct' chain-before='(1' chain-after='1)'/>
+Welcome to the Jecca tutorial. Let&apos;s assume we have used two annotators to annotate the current text. Have a look at the words in boldface like <mark  split='false' entity0='Obama; 1; Barack_Obama' chain-before0='(1' chain-after0='1)'><annotator index='1' entity='Barack_Obama' eval='correct' chain-before='(1' chain-after='1)'/>
 <annotator index='2' entity='Barack_Obama' eval='correct' chain-before='(1' chain-after='1)'/>
 Obama</mark>
-, which refers to the president. We call this &quot;combined view&quot;. When you move over it with your mouse cursor, you can see &quot;Obama&quot; twice, one line for every annotator. But we can also mean <mark  split='false' entity0='Obama; 1; Barack_Obama' chain-before0='(1,(2' chain-after0='1)'><annotator index='1' entity='Barack_Obama' eval='correct' chain-before='(1,(2' chain-after='1)'/>
+ referring to the president of the United States of America. When you move over it with your mouse cursor, you can see &quot;Obama&quot; twice, the first line corresponds to the first annotator and the second line to the second annotator. Both annotators got it right, so Obama appears in green. But <mark  split='true' entity0='Obama; 2; Michelle_Obama' chain-before0='(2' chain-after0='2)'><annotator index='1' entity='Barack_Obama' eval='wrong' chain-before='(1' chain-after='1)'/>
+<annotator index='2' eval='missing'/>
+Obama</mark>
+ may also refer to <mark  split='false' entity0='Obama; 1; Barack_Obama' chain-before0='(1,(2' chain-after0='1)'><annotator index='1' entity='Barack_Obama' eval='correct' chain-before='(1,(2' chain-after='1)'/>
 <annotator index='2' entity='Barack_Obama' eval='correct' chain-before='(1,(2' chain-after='1)'/>
 his</mark>
-<mark  split='false' entity0='his wife; 2; Michelle_Obama' chain-before0='' chain-after0='2)'><annotator index='1' entity='Michelle_Obama' eval='correct' chain-before='' chain-after='2)'/>
+<mark  split='false' entity0='Obama; 2; Michelle_Obama' chain-before0='' chain-after0='2)'><annotator index='1' entity='Michelle_Obama' eval='correct' chain-before='' chain-after='2)'/>
 <annotator index='2' entity='Michelle_Obama' eval='correct' chain-before='' chain-after='2)'/>
  wife</mark>
- with <mark  split='true' entity0='his wife; 2; Michelle_Obama' chain-before0='(2' chain-after0='2)'><annotator index='1' entity='Barack_Obama' eval='wrong' chain-before='(1' chain-after='1)'/>
-<annotator index='2' entity='Michelle_Obama' eval='correct' chain-before='(2' chain-after='2)'/>
-Obama</mark>
-. We call this &quot;split view&quot;. One annotator got it wrong and in that case you&apos;ll aways see the word multiple times. Move your mouse on top of a mention and a tooltip will give you details about it.  Click on the first line of &quot;<mark  split='true' entity0='his wife; 2; Michelle_Obama' chain-before0='(2' chain-after0='2)'><annotator index='1' entity='Barack_Obama' eval='wrong' chain-before='(1' chain-after='1)'/>
+. In this case &quot;Obama&quot; got duplicated, because the annotators produced different results for it. The first annotator got it wrong (red color) and the second hasn&apos;t found it at all (purple). Move your mouse on top of a mention and a tooltip will give you details about it. Click on the first line of &quot;<mark  split='true' entity0='Obama; 2; Michelle_Obama' chain-before0='(2' chain-after0='2)'><annotator index='1' entity='Barack_Obama' eval='wrong' chain-before='(1' chain-after='1)'/>
 <annotator index='2' entity='Michelle_Obama' eval='correct' chain-before='(2' chain-after='2)'/>
 Michelle Obama</mark>
-&quot; to mark all the spans annotated with <mark  split='false' entity0='his wife; 2; Michelle_Obama' chain-before0='(2' chain-after0='2)'><annotator index='1' entity='Michelle_Obama' eval='correct' chain-before='(2' chain-after='2)'/>
+&quot; to mark all the spans annotated with <mark  split='false' entity0='Obama; 2; Michelle_Obama' chain-before0='(2' chain-after0='2)'><annotator index='1' entity='Michelle_Obama' eval='correct' chain-before='(2' chain-after='2)'/>
 <annotator index='2' entity='Michelle_Obama' eval='correct' chain-before='(2' chain-after='2)'/>
 her</mark>
 . You can see in green the &quot;chain&quot; where the underlined span belongs to, and in red the chain to which it was wrongly attributed. Click on the underlined span or a span without a mention to go back to the normal mode.
@@ -1150,18 +1150,18 @@ her</mark>
     <metric name='ceafe' recall='0.6666667' precision='0.6666667'/>
 </annotator>
 <annotator id='1'>
-    <metric name='bcub' recall='1.0' precision='1.0'/>
-    <metric name='ceafm' recall='1.0' precision='1.0'/>
-    <metric name='muc' recall='1.0' precision='1.0'/>
-    <metric name='ceafe' recall='1.0' precision='1.0'/>
+    <metric name='bcub' recall='0.7083333' precision='1.0'/>
+    <metric name='ceafm' recall='0.8333333' precision='1.0'/>
+    <metric name='muc' recall='0.75' precision='1.0'/>
+    <metric name='ceafe' recall='0.9285714' precision='0.9285714'/>
 </annotator>
 </metrics>
   </article>
   <article id='Options'>
-JESICAT can combine either by same colors or same entities. Take for example &quot;<mark  split='false' entity0='bow; 1; bow_and_arrow' chain-before0='(1' chain-after0='1)'><annotator index='1' entity='violin_bow' eval='wrong' chain-before='(2' chain-after='2)'/>
+Jecca can combine mentions either by same color or same entity. Take for example &quot;<mark  split='false' entity0='bow; 1; bow_and_arrow' chain-before0='(1' chain-after0='1)'><annotator index='1' entity='violin_bow' eval='wrong' chain-before='(2' chain-after='2)'/>
 <annotator index='2' entity='bow_and_stern_of_a_ship' eval='wrong' chain-before='(2' chain-after='2)'/>
 bow</mark>
-&quot;, a homonym with several meanings. All annotators got it wrong what the original author meant with this word, because of the lacking context. Jesicat assumes that the user wants to see when one annotator got it wrong but the other got it right, and so spans where all annotators got it wrong get combined by default. By choosing &quot;Combine same entities&quot; Jesicat would show the aforementioned &quot;bow&quot; in the split view, too.  Click on &quot;Show symbols&quot; to display a ✔, ✘ or ? symbol at the end of the spans for correct, wrong or missing. When you want to information about overlapping mentions, activate the &quot;Show entity numbers&quot; option. Mentions with the same entities get the same number, where &quot;(&quot; indicates the start and &quot;)&quot; indicates the end. The upper number of a span indicates the gold standard entity and the number at the bottom the one of the annotator.
+&quot;, a homonym with several meanings. Both annotators misinterpreted what the author meant with this word, because he didn&apos;t put it in context. By default, Jecca combines mentions by color. Thus, since both annotator got it wrong, &quot;bow&quot; appears only once. However the annotators chose different (wrong) entities. The option &quot;Combine same entities&quot; makes Jecca duplicate the aforementioned &quot;bow&quot;, to visualize the fact that the annotators do not agree.  Click on &quot;Show symbols&quot; to display a ✔, ✘ or ? symbol at the end of the spans for correct, wrong or missing annotations. When you want information about overlapping mentions, activate the &quot;Show entity numbers&quot; option. Mentions with the same entities get the same number, where &quot;(&quot; indicates the start and &quot;)&quot; indicates the end. The upper number of a span indicates the gold standard entity and the number at the bottom the one of the annotator.
 <metrics>
 <annotator id='0'>
     <metric name='bcub' recall='0.6666667' precision='0.6666667'/>
@@ -1170,10 +1170,10 @@ bow</mark>
     <metric name='ceafe' recall='0.6666667' precision='0.6666667'/>
 </annotator>
 <annotator id='1'>
-    <metric name='bcub' recall='1.0' precision='1.0'/>
-    <metric name='ceafm' recall='1.0' precision='1.0'/>
-    <metric name='muc' recall='1.0' precision='1.0'/>
-    <metric name='ceafe' recall='1.0' precision='1.0'/>
+    <metric name='bcub' recall='0.7083333' precision='1.0'/>
+    <metric name='ceafm' recall='0.8333333' precision='1.0'/>
+    <metric name='muc' recall='0.75' precision='1.0'/>
+    <metric name='ceafe' recall='0.9285714' precision='0.9285714'/>
 </annotator>
 <annotator id='2'>
     <metric name='bcub' recall='1.0' precision='1.0'/>
@@ -1190,7 +1190,7 @@ bow</mark>
 </metrics>
   </article>
   <article id='Annotators'>
-Click on &quot;Anno 2&quot; to hide the second annotator. You can still click on mentions to highlight the corresponding chains. Jesicat recalculates which mentions to show in the split/compact view.
+Deselect &quot;Anno 2&quot; to hide the second annotator. You can still click on mentions to highlight the corresponding chains. Jecca recalculates which mentions to show in the split/compact view. If the users deselects all annotators, Jecca highlights the gold standard mentions.
 <metrics>
 <annotator id='0'>
     <metric name='bcub' recall='0.6666667' precision='0.6666667'/>
@@ -1199,10 +1199,10 @@ Click on &quot;Anno 2&quot; to hide the second annotator. You can still click on
     <metric name='ceafe' recall='0.6666667' precision='0.6666667'/>
 </annotator>
 <annotator id='1'>
-    <metric name='bcub' recall='1.0' precision='1.0'/>
-    <metric name='ceafm' recall='1.0' precision='1.0'/>
-    <metric name='muc' recall='1.0' precision='1.0'/>
-    <metric name='ceafe' recall='1.0' precision='1.0'/>
+    <metric name='bcub' recall='0.7083333' precision='1.0'/>
+    <metric name='ceafm' recall='0.8333333' precision='1.0'/>
+    <metric name='muc' recall='0.75' precision='1.0'/>
+    <metric name='ceafe' recall='0.9285714' precision='0.9285714'/>
 </annotator>
 <annotator id='2'>
     <metric name='bcub' recall='1.0' precision='1.0'/>
@@ -1231,7 +1231,7 @@ Click on &quot;Anno 2&quot; to hide the second annotator. You can still click on
 </metrics>
   </article>
   <article id='Evaluation'>
-On the right side you can see the evaluation. Choose your metric from the drop-down list. JESICAT will highlight the best annotator for recall and precision respectively.
+Jecca shows all available evaluation metrics in the drop-down list. Choose your preferred metric to see the computed precision and recall. Jecca highlights the best annotator for recall and precision respectively.
 <metrics>
 <annotator id='0'>
     <metric name='bcub' recall='0.6666667' precision='0.6666667'/>
@@ -1240,10 +1240,10 @@ On the right side you can see the evaluation. Choose your metric from the drop-d
     <metric name='ceafe' recall='0.6666667' precision='0.6666667'/>
 </annotator>
 <annotator id='1'>
-    <metric name='bcub' recall='1.0' precision='1.0'/>
-    <metric name='ceafm' recall='1.0' precision='1.0'/>
-    <metric name='muc' recall='1.0' precision='1.0'/>
-    <metric name='ceafe' recall='1.0' precision='1.0'/>
+    <metric name='bcub' recall='0.7083333' precision='1.0'/>
+    <metric name='ceafm' recall='0.8333333' precision='1.0'/>
+    <metric name='muc' recall='0.75' precision='1.0'/>
+    <metric name='ceafe' recall='0.9285714' precision='0.9285714'/>
 </annotator>
 <annotator id='2'>
     <metric name='bcub' recall='1.0' precision='1.0'/>
