@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 package tpt.dbweb.cat.datatypes.iterators;
 
 import java.util.ArrayList;
@@ -41,7 +45,7 @@ public class ComparePair {
   @Override
   public String toString() {
     return "compared (" + start + "-" + end + ") emps sizes " + emps.get(0).size() + " " + emps.get(1).size() + " entity mention pos: " + getPos(0)
-    + " --- " + getPos(1) + ";";
+        + " --- " + getPos(1) + ";";
   }
 
   /**

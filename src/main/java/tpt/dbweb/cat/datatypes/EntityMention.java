@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 package tpt.dbweb.cat.datatypes;
 
 /**
@@ -29,8 +33,8 @@ public class EntityMention extends TextSpan implements Cloneable {
   @Override
   public boolean equals(Object o) {
     if (this == o) {
-		return true;
-	}
+      return true;
+    }
     if (o instanceof EntityMention) {
       EntityMention em = (EntityMention) o;
 
@@ -60,8 +64,8 @@ public class EntityMention extends TextSpan implements Cloneable {
 
   public EntityMention getMinMention() {
     if (min == null) {
-		return this;
-	}
+      return this;
+    }
     EntityMention result = new EntityMention(this.text, min.start, min.end, entity);
     result.min = min;
     result.infoMap = infoMap;

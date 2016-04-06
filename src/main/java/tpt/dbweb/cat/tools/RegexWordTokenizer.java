@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 package tpt.dbweb.cat.tools;
 
 import java.util.ArrayList;
@@ -11,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import tpt.dbweb.cat.datatypes.TextSpan;
 
 /**
- * Tokenize a string with a simple regex. Whitespace gets removed. 
+ * Tokenize a string with a simple regex. Whitespace gets removed.
  * The output includes the split characters.
  * @author Thomas Rebele
  */
