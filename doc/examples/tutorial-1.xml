@@ -2,36 +2,36 @@
 <?xml-stylesheet type='text/xsl' href='trafo.xsl' ?>
 <articles>
 	<article id='Tutorial'>
-		Welcome to the JESICAT tutorial.
-		Have a look at the words in boldface like <mark entity="Barack_Obama">Obama</mark>, which refers to the president. 
-		We call this "combined view". When you move over it with your mouse cursor, you can see "Obama" twice, one line for every annotator.
-		But we can also mean <mark entity="Michelle_Obama"><mark entity="Barack_Obama">his</mark> wife</mark> with <mark entity="Barack_Obama">Obama</mark>.
-		We call this "split view".
-		One annotator got it wrong and in that case you'll aways see the word multiple times.
+		Welcome to the Jecca tutorial. Let's assume we have used two annotators to annotate the current text.
+		Have a look at the words in boldface like <mark entity="Barack_Obama">Obama</mark> referring to the president of the United States of America. 
+		When you move over it with your mouse cursor, you can see "Obama" twice, the first line corresponds to the first annotator and the second line to the second annotator.
+		Both annotators got it right, so Obama appears in green.
+		But <mark entity="Barack_Obama">Obama</mark> may also refer to <mark entity="Michelle_Obama"><mark entity="Barack_Obama">his</mark> wife</mark>.
+		In this case "Obama" got duplicated, because the annotators produced different results for it.
+		The first annotator got it wrong (red color) and the second hasn't found it at all (purple).
 		Move your mouse on top of a mention and a tooltip will give you details about it.
-		<br/>
 		Click on the first line of "<mark entity="Barack_Obama">Michelle Obama</mark>" to mark all the spans annotated with <mark entity="Michelle_Obama">her</mark>.
 		You can see in green the "chain" where the underlined span belongs to, and in red the chain to which it was wrongly attributed.
 		Click on the underlined span or a span without a mention to go back to the normal mode.
 	</article>
 	<article id='Options'>
-		JESICAT can combine either by same colors or same entities.
+		Jecca can combine mentions either by same color or same entity.
 		Take for example "<mark entity="violin_bow">bow</mark>", a homonym with several meanings.
-		All annotators got it wrong what the original author meant with this word, because of the lacking context.
-		Jesicat assumes that the user wants to see when one annotator got it wrong but the other got it right, and so spans where all annotators got it wrong get combined by default.
-		By choosing "Combine same entities" Jesicat would show the aforementioned "bow" in the split view, too.
+		Both annotators misinterpreted what the author meant with this word, because he didn't put it in context.
+		By default, Jecca combines mentions by color. Thus, since both annotator got it wrong, "bow" appears only once. However the annotators chose different (wrong) entities.
+		The option "Combine same entities" makes Jecca duplicate the aforementioned "bow", to visualize the fact that the annotators do not agree.
 		<br/>
-		Click on "Show symbols" to display a &#x2714;, &#x2718; or ? symbol at the end of the spans for correct, wrong or missing.
-		When you want to information about overlapping mentions, activate the "Show entity numbers" option.
+		Click on "Show symbols" to display a &#x2714;, &#x2718; or ? symbol at the end of the spans for correct, wrong or missing annotations.
+		When you want information about overlapping mentions, activate the "Show entity numbers" option.
 		Mentions with the same entities get the same number, where "(" indicates the start and ")" indicates the end.
 		The upper number of a span indicates the gold standard entity and the number at the bottom the one of the annotator.
 	</article>
 	<article id="Annotators">
-		Click on "Anno 2" to hide the second annotator. You can still click on mentions to highlight the corresponding chains. Jesicat recalculates which mentions to show in the split/compact view.
+		Deselect "Anno 2" to hide the second annotator. You can still click on mentions to highlight the corresponding chains. Jecca recalculates which mentions to show in the split/compact view. If the users deselects all annotators, Jecca highlights the gold standard mentions.
 	</article>
 	<article id='Evaluation'>
-		On the right side you can see the evaluation.
-		Choose your metric from the drop-down list.
-		JESICAT will highlight the best annotator for recall and precision respectively.
+		Jecca shows all available evaluation metrics in the drop-down list.
+		Choose your preferred metric to see the computed precision and recall.
+		Jecca highlights the best annotator for recall and precision respectively.
 	</article>
 </articles>

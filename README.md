@@ -9,8 +9,11 @@ Setup
 --------------
 - clone this repository
 - initialize submodules:
-	git submodule init
-	git submodule update
+
+```
+git submodule init
+git submodule update
+```
 
 Live Demos
 --------------

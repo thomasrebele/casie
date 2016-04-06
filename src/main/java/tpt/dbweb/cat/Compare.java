@@ -454,7 +454,7 @@ public class Compare {
       String eval = null;
       if (em0 != null && em0.entity != null) {
         if (emI == null || emI.entity == null) {
-          eval = "forgot";
+          eval = "missing";
         }
       }
       if (emI != null && emI.entity != null) {
