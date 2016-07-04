@@ -38,6 +38,7 @@ import tpt.dbweb.cat.datatypes.iterators.EntityMentionPosIterator.PosType;
 import tpt.dbweb.cat.evaluation.ComparisonResult;
 import tpt.dbweb.cat.evaluation.EvaluationStatistics;
 import tpt.dbweb.cat.io.TaggedTextXMLReader;
+import tpt.dbweb.cat.tools.ExtractInitials;
 import tpt.dbweb.cat.tools.MentionChainAligner;
 import tpt.dbweb.cat.tools.Utility;
 
@@ -52,6 +53,10 @@ public class Compare {
 
   private final static Logger log = LoggerFactory.getLogger(Compare.class);
 
+  public enum InputFormat {
+    CoNLL, XML
+  };
+
   /**
    * Command line options for compare
    */
@@ -59,6 +64,9 @@ public class Compare {
 
     @Parameter(description = "Input files, treat first as the gold standard")
     public List<String> input = new ArrayList<>();
+
+    @Parameter(names = "--format", description = "input format")
+    public InputFormat inputFormat = InputFormat.CoNLL;
 
     @Parameter(names = "--out")
     public String outputFile = null;
@@ -100,7 +108,7 @@ public class Compare {
     String chainAfter;
   }
 
-  public static void compareXML(Options options, List<ComparisonResult> evaluations) throws IOException {
+  public static void compare(Options options, List<ComparisonResult> evaluations) throws IOException {
     if (options.outputFile != null && options.input != null && options.input.size() > 0) {
       Compare compare = new Compare(new Options());
       List<Path> paths = options.input.stream().map(str -> Paths.get(str)).collect(Collectors.toList());
@@ -127,13 +135,13 @@ public class Compare {
    * @param tts list of tagged texts
    * @return true if tagged texts have the right format
    */
-  private boolean checkTaggedTexts(List<Path> files, List<TaggedText> tts) {
+  private boolean checkTaggedTexts(List<String> infos, List<TaggedText> tts) {
     // print message when article ids are not the same text
     for (int i = 1; i < tts.size(); i++) {
       TaggedText tt0 = tts.get(0), ttI = tts.get(i);
       if (!tt0.id.equals(ttI.id)) {
         StringBuilder sb = new StringBuilder();
-        sb.append("article id is not the same (file " + files.get(0) + ", id " + tt0.id + " and file " + files.get(i) + ", id " + ttI.id + ")");
+        sb.append("article id is not the same (" + infos.get(0) + ", id " + tt0.id + " and " + infos.get(i) + ", id " + ttI.id + ")");
         sb.append("\n>>>");
         sb.append(tt0.text);
         sb.append("\n<<<\n>>>");
@@ -147,8 +155,7 @@ public class Compare {
       if (!tt0.text.equals(ttI.text)) {
         if (log.isWarnEnabled()) {
           StringBuilder sb = new StringBuilder();
-          sb.append(
-              "text of article is not the same (file " + files.get(0) + ", id " + tt0.id + " and file " + files.get(i) + ", id " + ttI.id + ")");
+          sb.append("text of article is not the same (" + infos.get(0) + ", id " + tt0.id + " and " + infos.get(i) + ", id " + ttI.id + ")");
           sb.append(", common prefix: '");
           int prefixLen = Utility.getCommonPrefixLength(tt0.text, ttI.text);
           sb.append(tt0.text.substring(0, prefixLen));
@@ -175,88 +182,96 @@ public class Compare {
    */
   public void compareXML(List<Path> files, Path out, List<ComparisonResult> evaluations) throws IOException {
     log.info("comparing {}; writing output to {}", files, out);
+    List<Iterator<TaggedText>> ttIts = new ArrayList<>();
+    List<String> info = new ArrayList<>();
+    try {
+      TaggedTextXMLReader ttxr = new TaggedTextXMLReader();
+      for (int i = 0; i < files.size(); i++) {
+        ttIts.add(ttxr.iteratePath(files.get(i)));
+        info.add(files.get(i).toString());
+      }
+      compare(ttIts, info, out, evaluations);
+    } catch (FileNotFoundException e) {
+      log.error("file not found: {}", e.getMessage());
+    }
+  }
+
+  public void compare(List<Iterator<TaggedText>> ttIts, List<String> infos, Path out, List<ComparisonResult> evaluations) throws IOException {
     boolean docEvaluationNotFound = false;
 
     StringWriter sw = new StringWriter();
     PrintWriter ps = new PrintWriter(sw);
-    try {
-      TaggedTextXMLReader ttxr = new TaggedTextXMLReader();
-      ps.append("<annotators>\n");
-      List<Iterator<TaggedText>> ttIts = new ArrayList<>();
-      // load files and print annotator info
-      for (int i = 0; i < files.size(); i++) {
-        ttIts.add(ttxr.iteratePath(files.get(i)));
-        ps.append("\t<annotator id='" + i + "' file='");
-        ps.append(StringEscapeUtils.escapeXml11(files.get(i).toString()));
-        ps.append("'/>\n");
-      }
-      ps.append("</annotators>\n");
+    ps.append("<annotators>\n");
+    // load files and print annotator info
+    for (int i = 0; i < ttIts.size(); i++) {
+      ps.append("\t<annotator id='" + i + "' file='");
+      ps.append(StringEscapeUtils.escapeXml11(infos.get(i)));
+      ps.append("'/>\n");
+    }
+    ps.append("</annotators>\n");
 
-      // print evaluation
-      List<Map<String, EvaluationStatistics>> evals = new ArrayList<>();
-      Map<String, EvaluationStatistics> eval;
+    // print evaluation
+    List<Map<String, EvaluationStatistics>> evals = new ArrayList<>();
+    Map<String, EvaluationStatistics> eval;
+    if (evaluations != null) {
+      for (int i = 0; i < evaluations.size(); i++) {
+        ComparisonResult combinedEvaluations = evaluations.get(i).combine();
+        eval = new TreeMap<>();
+        evals.add(eval);
+
+        // type is macro / micro
+        for (String type : combinedEvaluations.docidToMetricToResult.keySet()) {
+          Map<String, EvaluationStatistics> metricToResult = combinedEvaluations.docidToMetricToResult.get(type);
+          for (String metric : metricToResult.keySet()) {
+            eval.put(metric + " (" + type + ")", metricToResult.get(metric));
+          }
+        }
+      }
+      ps.print(printMetrics(evals));
+      evals.clear();
+    }
+
+    // print comparison of articles
+    while (ttIts.stream().allMatch(it -> it.hasNext())) {
+      List<TaggedText> tts = ttIts.stream().map(it -> it.next()).collect(Collectors.toList());
+      tts.forEach(tt -> cleanUp(tt));
+      if (!checkTaggedTexts(infos, tts)) {
+        break;
+      }
+
+      // do comparison and write to output
+      ps.print("  <article id='");
+      ps.print(tts.get(0).id);
+      ps.println("'>");
+
+      ps.print(compare(tts));
+      ps.println();
+
+      // print evaluation of article
       if (evaluations != null) {
+        docEvaluationNotFound = true;
         for (int i = 0; i < evaluations.size(); i++) {
-          ComparisonResult combinedEvaluations = evaluations.get(i).combine();
-          eval = new TreeMap<>();
+          eval = evaluations.get(i).docidToMetricToResult.get(tts.get(0).id);
           evals.add(eval);
-
-          // type is macro / micro
-          for (String type : combinedEvaluations.docidToMetricToResult.keySet()) {
-            Map<String, EvaluationStatistics> metricToResult = combinedEvaluations.docidToMetricToResult.get(type);
-            for (String metric : metricToResult.keySet()) {
-              eval.put(metric + " (" + type + ")", metricToResult.get(metric));
-            }
+          if (eval != null) {
+            docEvaluationNotFound = false;
           }
         }
-        ps.print(printMetrics(evals));
-        evals.clear();
-      }
-
-      // print comparison of articles
-      while (ttIts.stream().allMatch(it -> it.hasNext())) {
-        List<TaggedText> tts = ttIts.stream().map(it -> it.next()).collect(Collectors.toList());
-        tts.forEach(tt -> cleanUp(tt));
-        if (!checkTaggedTexts(files, tts)) {
-          break;
-        }
-
-        // do comparison and write to output
-        ps.print("  <article id='");
-        ps.print(tts.get(0).id);
-        ps.println("'>");
-
-        ps.print(compare(tts));
-        ps.println();
-
-        // print evaluation of article
-        if (evaluations != null) {
-          docEvaluationNotFound = true;
-          for (int i = 0; i < evaluations.size(); i++) {
-            eval = evaluations.get(i).docidToMetricToResult.get(tts.get(0).id);
-            evals.add(eval);
-            if (eval != null) {
-              docEvaluationNotFound = false;
-            }
-          }
-          if (docEvaluationNotFound == false) {
-            ps.print(printMetrics(evals));
-          } else {
-          }
+        if (docEvaluationNotFound == false) {
+          ps.print(printMetrics(evals));
         } else {
-          docEvaluationNotFound = true;
         }
-        if (docEvaluationNotFound) {
-          log.warn("evaluation not found for {}", tts.get(0).id);
-        }
-        ps.println("  </article>");
+      } else {
+        docEvaluationNotFound = true;
       }
+      if (docEvaluationNotFound) {
+        log.warn("evaluation not found for {}", tts.get(0).id);
+      }
+      ps.println("  </article>");
+    }
 
-      if (docEvaluationNotFound && evaluations != null && evaluations.size() > 0) {
-        log.warn("available evaluations: {}", evaluations.get(0).docidToMetricToResult.keySet());
-      }
-    } catch (FileNotFoundException e) {
-      log.error("file not found: {}", e.getMessage());
+    if (docEvaluationNotFound && evaluations != null && evaluations.size() > 0) {
+      log.warn("available evaluations: {}", evaluations.get(0).docidToMetricToResult.keySet());
     }
 
     // load template and replace <article/>
@@ -334,6 +349,21 @@ public class Compare {
     for (int i = 0; i < mentions.size(); i++) {
       entityMentionToOutput.add(getEntityRenameMap(mentions.get(i), options.humanReadableMentions, chains.get(0)));
     }
+    // map chains to abbreviations
+    Map<String, List<String>> shortnameToEntry = new HashMap<>();
+    for (int i = 0; i < mentions.size(); i++) {
+      for (Entry<String, String> e : entityMentionToOutput.get(i).entrySet()) {
+        String shortName = ExtractInitials.getInitials(e.getKey());
+        shortnameToEntry.computeIfAbsent(shortName, ḱ -> new ArrayList<>(1)).add(e.getKey());
+      }
+    }
+    Map<String, String> entryToShortname = new HashMap<>();
+    for (Entry<String, List<String>> e : shortnameToEntry.entrySet()) {
+      int i = 0;
+      for (String c : e.getValue()) {
+        entryToShortname.put(c, e.getKey() + (++i));
+      }
+    }
 
     // iterate over mentions
     CompareIterator cmpIt = new CompareIterator(tts.get(0).text, tts.get(0).id, mentions);
@@ -370,8 +400,13 @@ public class Compare {
         boolean split = evaluateMark(last, pair, principalMentions, chains, evals);
         builder.append(" split='" + Boolean.toString(split) + "'");
         // add entity and other information
-        if (principalMentions.get(0) != null) {
-          builder.append(" entity0='" + entityMentionToOutput.get(0).get(principalMentions.get(0).entity) + "'");
+        EntityMention em = principalMentions.get(0);
+        if (em != null) {
+          builder.append(" entity0='" + entityMentionToOutput.get(0).get(em.entity) + "'");
+          builder.append(" short0='" + Utility.orElse(entryToShortname.get(em.entity), "-") + "'");
+        } else {
+          //builder.append(" entity='-'");
+          builder.append(" short='-'");
         }
 
         // TODO: how to deal with additional information?
@@ -392,9 +427,13 @@ public class Compare {
         // print out individual annotator evaluations
         for (int i = 1; i < mentions.size(); i++) {
           builder.append("<annotator index='" + i + "'");
-          EntityMention em = principalMentions.get(i);
+          em = principalMentions.get(i);
           if (em != null) {
             builder.append(" entity='" + StringEscapeUtils.escapeXml11(em.entity) + "'");
+            builder.append(" short='" + Utility.orElse(entryToShortname.get(em.entity), "-") + "'");
+          } else {
+            //builder.append(" entity='-'");
+            builder.append(" short='-'");
           }
           if (evals.get(i).eval != null) {
             builder.append(" eval='" + evals.get(i).eval + "'");

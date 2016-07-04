@@ -107,4 +107,8 @@ public class Utility {
     return Arrays.asList("--", "--OOKBE--", "--NME--").contains(string);
   }
 
+  public static <T> T orElse(T value, T defaultValue) {
+    if (value != null) return value;
+    return defaultValue;
+  }
 }

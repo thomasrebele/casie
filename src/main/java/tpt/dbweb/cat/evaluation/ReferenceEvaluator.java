@@ -78,7 +78,7 @@ public class ReferenceEvaluator {
   }
 
   /**
-   * Compares two tagged text XML files.
+   * EValuates metrics for two tagged text XML files.
    * @param goldstandard path to tagged text XML
    * @param compare path to tagged text XML
    * @param tmpDirectory where to store generated files
@@ -88,19 +88,36 @@ public class ReferenceEvaluator {
   public ComparisonResult compareXMLFiles(Path goldstandard, Path compare, Path tmpDirectory) throws IOException {
     TaggedTextXMLReader.Options options = new TaggedTextXMLReader.Options();
     TaggedTextXMLReader reader = new TaggedTextXMLReader(options);
+    List<TaggedText> goldstd = reader.getTaggedText(goldstandard), cmp = reader.getTaggedText(compare);
+    return compare(goldstd, goldstandard.getFileName().toString(), cmp, compare.getFileName().toString(), tmpDirectory);
+  }
+
+  public ComparisonResult compare(List<TaggedText> goldstandard, List<TaggedText> compare, Path tmpDirectory) throws IOException {
+    return compare(goldstandard, "goldstd", compare, "compare", tmpDirectory);
+  }
+
+  /**
+   * Evaluates metrics for list of tagged texts.
+   * @param goldstandard list of tagged texts
+   * @param goldstandardFilename temporary filename for goldstandard .conll file
+   * @param compare list of tagged texts
+   * @param compareFilename temporary filename for compare .conll file
+   * @param tmpDirectory
+   * @return
+   * @throws IOException
+   */
+  public ComparisonResult compare(List<TaggedText> goldstandard, String goldstandardFilename, List<TaggedText> compare, String compareFilename,
+      Path tmpDirectory) throws IOException {
+    String scorerOutput = goldstandardFilename + "-" + compareFilename + "-scorer-output";
     ConllWriter conll = new ConllWriter();
     ReferenceEvaluator evaluator = new ReferenceEvaluator();
-
-    // many files
-    List<TaggedText> goldstd = reader.getTaggedText(goldstandard), cmp = reader.getTaggedText(compare);
-    String scorerOutput = goldstandard.getFileName() + "-" + compare.getFileName() + "-scorer-output";
     if (this.options.singleFile) {
       log.info("using only one thread, try to use the split file option to speed things up");
-      Path goldstdConllFile = tmpDirectory.resolve(goldstandard.getFileName() + ".conll");
-      conll.writeTTList(goldstd, goldstdConllFile);
+      Path goldstdConllFile = tmpDirectory.resolve(goldstandardFilename + ".conll");
+      conll.writeTTList(goldstandard, goldstdConllFile);
 
-      Path compareConllFile = tmpDirectory.resolve(compare.getFileName() + ".conll");
-      conll.writeTTList(cmp, compareConllFile);
+      Path compareConllFile = tmpDirectory.resolve(compareFilename + ".conll");
+      conll.writeTTList(compare, compareConllFile);
 
       Path scorerOutputFile = tmpDirectory.resolve(scorerOutput + ".txt");
       ComparisonResult result = evaluator.compareConllFiles(goldstdConllFile, compareConllFile, scorerOutputFile);
@@ -112,14 +129,14 @@ public class ReferenceEvaluator {
       return result;
 
     } else {
-      int cnt = Math.min(goldstd.size(), cmp.size());
+      int cnt = Math.min(goldstandard.size(), compare.size());
       List<ComparisonResult> lst = IntStream.range(0, cnt).parallel().mapToObj((i) -> {
-        String id = goldstd.get(i).id;
-        Path goldstdConllFile = tmpDirectory.resolve(goldstandard.getFileName() + "-" + id);
-        conll.writeTT(goldstd.get(i), goldstdConllFile);
+        String id = goldstandard.get(i).id;
+        Path goldstdConllFile = tmpDirectory.resolve(goldstandardFilename + "-" + id);
+        conll.writeTT(goldstandard.get(i), goldstdConllFile);
 
-        Path compareConllFile = tmpDirectory.resolve(compare.getFileName() + "-" + id);
-        conll.writeTT(cmp.get(i), compareConllFile);
+        Path compareConllFile = tmpDirectory.resolve(compareFilename + "-" + id);
+        conll.writeTT(compare.get(i), compareConllFile);
 
         Path scorerOutputFile = tmpDirectory.resolve(scorerOutput + Thread.currentThread().getName() + ".txt");
         ComparisonResult singleResult = evaluator.compareConllFiles(goldstdConllFile, compareConllFile, scorerOutputFile);
