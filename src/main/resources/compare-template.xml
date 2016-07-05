@@ -23,7 +23,6 @@
 		<xsl:template match="/">
 			<xsl:variable name="color1">#e68a2f</xsl:variable>
 			<xsl:variable name="color2">#2f31e6</xsl:variable>
-			<xsl:variable name="color1and2">#000000</xsl:variable>
 			
 			<html xmlns:x="http://telecom-paristech.fr/namespace/">
 				<head>
@@ -41,8 +40,8 @@
 						.supsub {display:none; }
 						.supsub span {font-size: 0.6em; display:inline; position:relative;}
 						.superscript { color: darkseagreen; top: -1.5ex; }
-						[data-index="1"] .subscript { color: <xsl:value-of select="$color1"/> ; top: -1.75ex; }
-						[data-index="2"] .subscript { color: <xsl:value-of select="$color2"/>; top: -1.75ex; }
+						[data-index="1"] .subscript { ; top: -1.75ex; }
+						[data-index="2"] .subscript { ; top: -1.75ex; }
 						.highlight  { text-shadow: .5px 0px .0px, -.5px 0px .0px;} 
 						
 						/* combine elements according to split attribute */
@@ -105,11 +104,8 @@
 					
 					<style>
 						styleid { content: 'coloring:annotators'; }
-						[data-split="false"] .highlight .annotator:first-child { color: <xsl:value-of select="$color1and2"/>; text-shadow: .5px 0px .0px, -.5px 0px .0px;} /* color1and2 */
-						[data-split="false"]:hover .highlight .annotator:first-child { color: <xsl:value-of select="$color1"/>; text-shadow: .5px 0px .0px, -.5px 0px .0px;}
+						[data-split="false"] .highlight .annotator:first-child { text-shadow: .5px 0px .0px, -.5px 0px .0px;}
 						
-						[data-index="1"]:not([data-eval=""]).highlight { color: <xsl:value-of select="$color1"/>; }
-						[data-index="2"]:not([data-eval=""]).highlight { color: <xsl:value-of select="$color2"/>; }
 					</style>
 					<style>
 						styleid { content: 'coloring:noAnno'; }
@@ -120,13 +116,11 @@
 					</style>
 					<style>
 						styleid { content: 'coloring:eval'; }
-						[data-index="1"].highlight .symbol { color: <xsl:value-of select="$color1"/>; }
-						[data-index="2"].highlight .symbol { color: <xsl:value-of select="$color2"/>; }
 						/* styles for evaluation */
-						[data-eval="correct"].highlight { color: green; }
-						[data-eval="toomuch"].highlight { color: red; }
-						[data-eval="missing"].highlight { color: DarkSlateBlue; }
-						[data-eval="wrong"].highlight { color: red; }
+						[data-eval="correct"].highlight * { color: green; }
+						[data-eval="toomuch"].highlight * { color: red; }
+						[data-eval="missing"].highlight * { color: red; }
+						[data-eval="wrong"].highlight * { color: red; }
 					</style>
 					<style>
 						styleid { content: 'coloring:diff'; }
@@ -157,7 +151,7 @@
 						styleid { content: 'symbols'; }
 						.symbols { display: initial; }
 						.symbol { display: initial; position: relative; bottom: 1ex; font-size: small; }
-						table.overlay:hover .grouped-symbols { display: none; }
+						[data-split="true"] .grouped-symbols, table.overlay:hover .grouped-symbols { display: none; }
 						/*[data-split="false"] .symbols { position: relative; }
 						[data-split="false"] .symbols .single-symbol { position: absolute; left: 0px; }*/
 					</style>
@@ -344,6 +338,7 @@
 							Combine same <select id="optCombine" size="1" onchange="updateMode()"> 
 								<option value="eval" selected="true">colors</option> 
 								<option value="entity">entities</option> 
+								<option value="none">nothing</option> 
 							</select>
 							<br/>
 
@@ -381,8 +376,8 @@
 						<div style="font-size: 80%; margin-top: 2ex;">
 							* colors:
 							<span class="defaultMode"><br/>
-								<span data-eval="correct">correct</span><br/>
-								<span data-eval="wrong">wrong</span><br/>
+								<span data-eval="correct"><span>correct</span></span><br/>
+								<span data-eval="wrong"><span>wrong</span></span><br/>
 								<!-- <span data-eval="missing">missing</span> -->
 							</span>
 							<span class="highlightMode"><br/>
@@ -740,18 +735,22 @@
 													return lastVal || newVal;
 												}
 											}
-											
-											for(var j=startJ; j<annotators.length; j++) {
-												if(isEnabled("" + j)) {
-													// always split highlighted spans
-													if(annotatorSpans[j].classList.contains("highlight")) {
-														base = "split";
-													}
-													var val = annotatorSpans[j].getAttribute(combineAttribute) || "";
-													base = accumulate(base, val, "split");
-													if(j>0) {
-														var val = annotatorSpans[j].getAttribute("data-eval") || "";
-														eval = accumulate(eval, val, "split");
+											if(combineAttribute == "data-none") {
+												base = "split";
+											}
+											else {
+												for(var j=startJ; j<annotators.length; j++) {
+													if(isEnabled("" + j)) {
+														// always split highlighted spans
+														if(annotatorSpans[j].classList.contains("highlight")) {
+															base = "split";
+														}
+														var val = annotatorSpans[j].getAttribute(combineAttribute) || "";
+														base = accumulate(base, val, "split");
+														if(j>0) {
+															var val = annotatorSpans[j].getAttribute("data-eval") || "";
+															eval = accumulate(eval, val, "split");
+														}
 													}
 												}
 											}
@@ -923,7 +922,7 @@
 										result = "&#x2718;"; // TODO: another symbol?
 										break;
 									case "missing":
-										result = ""; //"&quest;"; // ❓
+										result = "&#x2718;"; //"&quest;"; // ❓
 										break;
 									case "wrong":
 										result= "&#x2718;"; // ✘
