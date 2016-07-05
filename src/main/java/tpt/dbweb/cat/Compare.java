@@ -83,7 +83,7 @@ public class Compare {
     /**
      * Transform the entities to a more human readable form (add string of first mention and chain number)
      */
-    public boolean humanReadableMentions = true;
+    public boolean humanReadableMentions = false;
 
     /**
      * remove non-mention-entities from the input
@@ -420,7 +420,7 @@ public class Compare {
           builder.append(" short0='" + Utility.orElse(entryToShortname.get(em.entity), "-") + "'");
         } else {
           //builder.append(" entity='-'");
-          builder.append(" short='-'");
+          builder.append(" short0='-'");
         }
 
         // TODO: how to deal with additional information?

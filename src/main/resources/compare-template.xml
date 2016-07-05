@@ -157,6 +157,7 @@
 						styleid { content: 'symbols'; }
 						.symbols { display: initial; }
 						.symbol { display: initial; position: relative; bottom: 1ex; font-size: small; }
+						table.overlay:hover .grouped-symbols { display: none; }
 						/*[data-split="false"] .symbols { position: relative; }
 						[data-split="false"] .symbols .single-symbol { position: absolute; left: 0px; }*/
 					</style>
@@ -348,7 +349,7 @@
 
 							<label><input id="showSymbols" type="checkbox" name="symbols"  onchange="cssStyle['symbols'].disabled = !this.checked; updateMode();"/>Show symbols</label>
 							<br/>
-							<label><input id="showChains" type="checkbox" name="chains" onchange="cssStyle['chains'].disabled = !this.checked; updateMode();"/>Show entity numbers</label>
+							<label><input id="showChains" type="checkbox" name="chains" onchange="cssStyle['chains'].disabled = !this.checked; updateMode();"/>Show span limits</label>
 						</div>
 						<div>
 							<h3 style="background-color: #333;color:white;"> Annotators </h3>
@@ -445,9 +446,18 @@
 							
 
 							/*To dynamically create the annotator checkboxes*/
-							for(var k=1;k<annotators.length;k++){
-								initElement(document.getElementById('annotators'),'input',{type:'checkbox', id:"checkTag"+annotators[k]["id"], name:'annotator'+annotators[k]["id"] ,value:"annotator"+annotators[k]["id"], onchange:"updateMode();", checked:'checked'});
-								elementLabeling("Anno "+annotators[k]["id"],"checkTag"+annotators[k]["id"],document.getElementById('annotators'));
+							for(var k=0;k<annotators.length;k++){
+								var id = annotators[k]["id"];
+								var name = "annotator "+id;
+								var attributes = {
+									type:'checkbox', id:"checkTag"+id, name:'annotator'+id, value:"annotator"+id,
+									onchange:"updateMode();", checked:'checked'};
+								if(k==0) {
+									name = "gold standard";
+									delete attributes['checked'];
+								}
+								initElement(document.getElementById('annotators'),'input',attributes);
+								elementLabeling(name,"checkTag"+annotators[k]["id"],document.getElementById('annotators'));
 								if(k<annotators.length-1){
 									var br = document.createElement('br');
 									document.getElementById('annotators').appendChild(br);
@@ -686,11 +696,10 @@
 									sheet.deleteRule(0);
 								}
 								function isEnabled(index) {
-									if(index==0) return false;
 									return document.getElementById('checkTag' + index).checked;
 								}
 								var enabledTaggers = new Array();
-								for(var i=1; i<annotators.length; i++) {
+								for(var i=0; i<annotators.length; i++) {
 									if(isEnabled(annotators[i]["id"])) {
 										enabledTaggers.push(annotators[i]["id"]);
 									}
@@ -705,32 +714,65 @@
 										}
 									}
 									for(var i=0; i<markSpans.length; i++) {
+										var rows = markSpans[i].getElementsByTagName("tr");
+										var groupSymbol = rows[0].getElementsByTagName("td")[2];
+										while(groupSymbol.firstChild) { groupSymbol.removeChild(groupSymbol.lastChild); }
+
 										if(enabledTaggers.length == 1) {
 											markSpans[i].setAttribute("data-split", "true");
 										}
 										else {
 											var base = null;
+											var eval = null;
 											var annotatorSpans = markSpans[i].getElementsByClassName("annotator");
 											// TODO: fix bug if wrongly tagged by second annotator
 											
 											var optCombine = document.getElementById("optCombine");
 											var combineAttribute = "data-" + optCombine.options[optCombine.selectedIndex].value;
-											for(var j=1; j<annotators.length; j++) {
+											var startJ = 1-optCombine.selectedIndex;
+											
+											/* used to check whether some values have the same value */
+											function accumulate(lastVal, newVal, disagreementValue) {
+												if( lastVal == disagreementValue || (lastVal == null ? newVal : lastVal) != newVal) {
+													return disagreementValue;
+												}
+												else {
+													return lastVal || newVal;
+												}
+											}
+											
+											for(var j=startJ; j<annotators.length; j++) {
 												if(isEnabled("" + j)) {
 													// always split highlighted spans
 													if(annotatorSpans[j].classList.contains("highlight")) {
 														base = "split";
-														break;
 													}
 													var val = annotatorSpans[j].getAttribute(combineAttribute) || "";
-													if( (base == null ? val : base) != val) {
-														base = "split";
-														break;
+													base = accumulate(base, val, "split");
+													if(j>0) {
+														var val = annotatorSpans[j].getAttribute("data-eval") || "";
+														eval = accumulate(eval, val, "split");
 													}
-													base = base || val;
 												}
 											}
 											markSpans[i].setAttribute("data-split", base == "split");
+											console.log("a",eval);
+											if(eval != "split") {
+												console.log("b",eval);
+												// create symbol
+												var toolTipText, index, dest, eval;
+												toolTipText = evalToSymbol(eval);
+												
+												// symbol after each annotator's mention
+												groupSymbol = initElement(groupSymbol, 'span', {
+													class:"grouped-symbols"});
+												groupSymbol = initElement(groupSymbol, 'span', {
+													class:"symbols"});
+												initElement(groupSymbol,'span',{
+													class:"symbol" 
+													}, toolTipText);
+											}
+											
 										}
 									}
 								}
@@ -870,58 +912,44 @@
 								}
 							}
 
+							function evalToSymbol(eval) {
+								var result = "";
+								switch(eval) {
+									// TODO: symbols
+									case "correct":
+										result = "&#x2714;"; // ✔
+										break;
+									case "toomuch":
+										result = "&#x2718;"; // TODO: another symbol?
+										break;
+									case "missing":
+										result = ""; //"&quest;"; // ❓
+										break;
+									case "wrong":
+										result= "&#x2718;"; // ✘
+										break;
+								}
+								return result;
+							}
+
 							// add symbols
 							for(i=0; i < markSpans.length; i++) {
-								var split = markSpans[i].getAttribute("data-split");
 								var children = markSpans[i].getElementsByClassName("annotator");
-								
-								var anchor = document.createElement("span");
-								anchor.classList.add("grouped-symbols");
-								var firstFontNode = markSpans[i].getElementsByTagName("td")[2].getElementsByClassName("collapse")[0];
-								
-								var parent = document.createElement("span");
-								parent.classList.add("symbols");
-								parent.appendChild(anchor);
-								firstFontNode.appendChild(parent);
-								
-								for(var j=0; j<children.length; j++) {
+								for(var j=1; j<children.length; j++) {
 									// create symbol
 									var toolTipText, index, dest, eval;
 									eval = children[j].getAttribute("data-eval");
-									switch(eval) {
-										// TODO: symbols
-										case "correct":
-											toolTipText = "&#x2714;"; // ✔
-											break;
-										case "toomuch":
-											toolTipText = "&#x2718;"; // TODO: another symbol?
-											break;
-										case "missing":
-											toolTipText = "&quest;"; //"&#x2753;"; // ❓
-											break;
-										case "wrong":
-											toolTipText= "&#x2718;"; // ✘
-											break;
-										default:
-											toolTipText = "";
-									}
+									toolTipText = evalToSymbol(eval);
+									
 									index = children[j].getAttribute("data-index");
 									// symbol after each annotator's mention
 									dest = children[j].getElementsByTagName("td")[2];
 									
-									if(!isUndefined(dest)) {
-										if(j != 0) {
-											dest = initElement(dest, 'span', {
-												class:"symbols"});
-										} else {
-											initElement(parent,'span',{
-												class:"symbol single-symbol", 
-												}, toolTipText);
-										}
-										initElement(dest,'span',{
-											class:"symbol single-symbol", 
-											"data-index":index}, toolTipText);
-									}
+									dest = initElement(dest, 'span', {
+										class:"symbols"});
+									initElement(dest,'span',{
+										class:"symbol single-symbol", 
+										"data-index":index}, toolTipText);
 								}
 							}
 						}
@@ -996,7 +1024,7 @@
 					<xsl:attribute name="data-{name()}"><xsl:value-of select="."/></xsl:attribute>
 				</xsl:for-each>
 				<table class="overlay">
-					<tr class="combined">
+					<tr>
 						<!-- opening chain number -->
 						<td>
 							<span class="collapse">
@@ -1007,7 +1035,7 @@
 						</td>
 
 						<!-- text -->
-						<td style="background-color: white;text-align: center;">
+						<td style="background-color: white;text-align: center;text-shadow: .5px 0px .0px, -.5px 0px .0px;">
 							<span class="collapse">
 								<xsl:value-of select="."/>
 							</span>
@@ -1026,23 +1054,26 @@
 						</td>
 					</tr>
 					<tr class="annotator">
+						<xsl:attribute name="data-eval">correct</xsl:attribute>
+						<xsl:attribute name="data-index">0</xsl:attribute>
+						<xsl:attribute name="data-entity"><xsl:value-of select="@entity0"/></xsl:attribute>
+						<xsl:for-each select='@*'>
+							<xsl:attribute name="data-{name()}"><xsl:value-of select="."/></xsl:attribute>
+						</xsl:for-each>
+
 						<td>
-							<span class="collapse">
 								<xsl:call-template name="chainImpl">
 									<xsl:with-param name="chain0" select="@chain-before0" />
 								</xsl:call-template>
-							</span>
 						</td>
-						<td style="background-color: white; text-shadow: .5px 0px .0px, -.5px 0px .0px;">
-							<xsl:value-of select="." />
+						<td class="textColumn entity" style="background-color: white; ">
+							G: <xsl:value-of select="@short0" />
 						</td>
 						<td></td>
 						<td>
-							<span class="collapse">
 								<xsl:call-template name="chainImpl">
 									<xsl:with-param name="chain0" select="@chain-after0" />
 								</xsl:call-template>
-							</span>
 						</td>
 					</tr>
 					<xsl:apply-templates select="*"/>
