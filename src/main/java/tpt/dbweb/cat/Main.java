@@ -99,7 +99,7 @@ public class Main {
     }
 
     // compare files
-    Compare.compareXML(options.compareOptions, cmp);
+    Compare.compare(options.compareOptions, cmp);
 
   }
 }

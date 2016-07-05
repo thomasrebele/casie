@@ -12,10 +12,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -350,22 +352,34 @@ public class Compare {
       entityMentionToOutput.add(getEntityRenameMap(mentions.get(i), options.humanReadableMentions, chains.get(0)));
     }
     // map chains to abbreviations
-    Map<String, List<String>> shortnameToEntry = new HashMap<>();
+    Map<String, Set<String>> shortnameToEntryList = new HashMap<>();
     for (int i = 0; i < mentions.size(); i++) {
       for (Entry<String, String> e : entityMentionToOutput.get(i).entrySet()) {
         String shortName = ExtractInitials.getInitials(e.getKey());
-        shortnameToEntry.computeIfAbsent(shortName, ḱ -> new ArrayList<>(1)).add(e.getKey());
+        shortnameToEntryList.computeIfAbsent(shortName, ḱ -> new HashSet<>(1)).add(e.getKey());
       }
     }
     Map<String, String> entryToShortname = new HashMap<>();
-    for (Entry<String, List<String>> e : shortnameToEntry.entrySet()) {
+    Map<String, String> shortnameToEntry = new TreeMap<>();
+    for (Entry<String, Set<String>> e : shortnameToEntryList.entrySet()) {
       int i = 0;
       for (String c : e.getValue()) {
-        entryToShortname.put(c, e.getKey() + (++i));
+        String shortname = e.getKey() + (e.getValue().size() <= 1 ? "" : (++i));
+        entryToShortname.put(c, shortname);
+        shortnameToEntry.put(shortname, c);
       }
     }
 
+    // output abbreviation legend
+    builder.append("<shortmap>\n");
+    for (Entry<String, String> e : shortnameToEntry.entrySet()) {
+      builder.append("<entry key='" + e.getKey() + "'");
+      builder.append(" value='" + e.getValue() + "'/>\n");
+    }
+    builder.append("</shortmap>\n");
+
     // iterate over mentions
+    builder.append("<content>");
     CompareIterator cmpIt = new CompareIterator(tts.get(0).text, tts.get(0).id, mentions);
     ComparePair last = null;
     for (ComparePair pair : Utility.iterable(cmpIt)) {
@@ -459,6 +473,7 @@ public class Compare {
 
       last = pair;
     }
+    builder.append("</content>");
 
     return builder.toString().trim();
   }

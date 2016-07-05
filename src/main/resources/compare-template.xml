@@ -30,6 +30,10 @@
 					<title>Jecca</title>
 					<meta charset="UTF-8" />
 					<style>
+						.shortmap { /*float: right;*/ background-color: lightgray; padding: 1em; margin: 1em; font-size: 12px; }
+						.shortmap .entity { font-weight: bold; }
+						.linespacer { font-size: 5px; }
+					
 						.stack {display: inline-flex; flex-direction: column;}
 						span { white-space:nowrap; }
 						
@@ -71,9 +75,9 @@
 						}
 						table.overlay td:nth-child(4) { text-align: left; }
 						table.overlay .annotator .textColumn {
-							font-style: italic;
 							font-size: 12px;
 						}
+						.entity { font-style: italic; }
 						
 						.combined, [data-index] { color: grey; }
 						.symbol, .symbols { display: none; }
@@ -141,6 +145,7 @@
 						[data-index] { color: gray; }
 						.highlightMode { display: initial; }
 						.defaultMode { display: none; }
+						.rightchain { text-decoration: underline; }
 					</style>
 					<style>
 						styleid { content: 'highlighting:disabled'; }
@@ -171,7 +176,7 @@
 						.grail, .grail-body { display: flex; flex-direction: column; }
 						.grail-content { flex: 1; }
 						.grail-nav { order: 1; }
-						@media ( min-width : 568px) {
+						@media ( min-width : 750px) {
 							.grail-body { flex-direction: row; flex: 1; }
 							.grail-content { flex: 1; }
 							.grail-nav { /* 10em is the width of the columns */ flex: 0 0 10em; margin: 0 10px 0 10px ;}
@@ -323,7 +328,7 @@
 							<xsl:apply-templates /> 
 						</div>
 					</div>
-					<div id="wrapper2" class="grail-nav">
+					<div id="wrapper2" class="grail-nav" style="font-size: 80%;">
 						<div>
 							<h3 style="background-color: #333;color:white;"> Options </h3>
 							<!--<select class='menu' id="optDoc" size="2" onchange="document.getElementById('content').onclick()"> 
@@ -372,7 +377,7 @@
 								</div> -->
 							</div>
 						</div>
-						<div style="font-size: 70%; margin-top: 2ex;">
+						<div style="font-size: 80%; margin-top: 2ex;">
 							* colors:
 							<span class="defaultMode"><br/>
 								<span data-eval="correct">correct</span><br/>
@@ -940,10 +945,13 @@
 			<xsl:if test="@id=''">Article </xsl:if>
 				<xsl:value-of select="@id"/>
 			</h2>
-			<div class="article" > <!-- style="line-height: 100%" -->
-				<div class="text"/>
-					<xsl:apply-templates />
-				<div class="text"/>
+			<div class="article grail-body" > <!-- style="line-height: 100%" -->
+				<div class="grail-content">
+				<xsl:apply-templates select="content"/>
+				</div>
+				<div class="grail-nav">
+				<xsl:apply-templates select="shortmap"/>
+				</div>
 			</div>
 		</xsl:template>
 
@@ -1038,7 +1046,7 @@
 						</td>
 					</tr>
 					<xsl:apply-templates select="*"/>
-					<tr>
+					<tr class="linespacer">
 						<td></td>
 						<td class="noselect">&#160;</td>
 						<td></td>
@@ -1057,12 +1065,11 @@
 
 			<td>
 				<xsl:call-template name="chainImpl">
-					<xsl:with-param name="chain0" select="../@chain-before0" />
 					<xsl:with-param name="chain" select="@chain-before" />
 				</xsl:call-template>
 			</td>
 
-			<td class="textColumn">
+			<td class="textColumn entity">
 					A<xsl:value-of select="@index" />: 
 					<xsl:value-of select="@short" />
 				<!--<xsl:value-of select=".." />-->
@@ -1072,16 +1079,12 @@
 
 			<td>
 				<xsl:call-template name="chainImpl">
-					<xsl:with-param name="chain0" select="../@chain-after0" />
 					<xsl:with-param name="chain" select="@chain-after" />
 				</xsl:call-template>
 			</td>
 			
 			</tr>
 		</xsl:template>
-
-		 
-	
 
 		<xsl:template name="chainImpl">
 			<xsl:param name="chain0"/>
@@ -1099,9 +1102,20 @@
 					</span>
 				</span>
 			</xsl:if>
-
 		</xsl:template>
 
+		<xsl:template match="shortmap">
+			<div class="shortmap">
+				<b>Abbreviations:</b><br/>
+				<xsl:apply-templates />
+			</div>
+		</xsl:template>
+		<xsl:template match="shortmap/entry">
+			<div>
+				<span class="entity"><xsl:value-of select="@key" /></span>: 
+				<xsl:value-of select="@value" /><br/>
+			</div>
+		</xsl:template>
 
 		<xsl:template match="evaluation">
 			<span class="eval">
