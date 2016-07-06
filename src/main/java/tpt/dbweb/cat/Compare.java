@@ -418,25 +418,7 @@ public class Compare {
         builder.append(" split='" + Boolean.toString(split) + "'");
         // add entity and other information
         EntityMention em = principalMentions.get(0);
-        if (em != null) {
-          builder.append(" entity0='" + entityMentionToOutput.get(0).get(em.entity) + "'");
-          builder.append(" short0='" + Utility.orElse(entryToShortname.get(em.entity), "[none]") + "'");
-        } else {
-          //builder.append(" entity='-'");
-          builder.append(" short0='[none]'");
-        }
-
-        // TODO: how to deal with additional information?
-        for (int i = 0; i < mentions.size(); i++) {
-          if (principalMentions.get(i) != null) {
-            /*if (principalMentions.get(i).info() != null) {
-              for (Entry<String, String> info : principalMentions.get(i).info().entrySet()) {
-                builder.append(" " + info.getKey() + i + "='"
-                    + StringEscapeUtils.escapeXml10(info.getValue()) + "'");
-              }
-            }*/
-          }
-        }
+        printEntityAttributes(builder, "0", pair, em, entityMentionToOutput, entryToShortname);
 
         addChainInfo("0", evals.get(0), builder);
         builder.append(">");
@@ -445,13 +427,7 @@ public class Compare {
         for (int i = 1; i < mentions.size(); i++) {
           builder.append("<annotator index='" + i + "'");
           em = principalMentions.get(i);
-          if (em != null) {
-            builder.append(" entity='" + StringEscapeUtils.escapeXml11(em.entity) + "'");
-            builder.append(" short='" + Utility.orElse(entryToShortname.get(em.entity), "[none]") + "'");
-          } else {
-            //builder.append(" entity='-'");
-            builder.append(" short='[none]'");
-          }
+          printEntityAttributes(builder, "", pair, em, entityMentionToOutput, entryToShortname);
           if (evals.get(i).eval != null) {
             builder.append(" eval='" + evals.get(i).eval + "'");
             addAnnotatorInfo(i, evals, principalMentions, builder);
@@ -460,7 +436,6 @@ public class Compare {
           // Note: newline character introduces a space between a mark and its before chain annotations
           builder.append("/>\n");
         }
-
       }
 
       // generate chain indices for super/subscript
@@ -479,6 +454,23 @@ public class Compare {
     builder.append("</content>");
 
     return builder.toString().trim();
+  }
+
+  private void printEntityAttributes(StringBuilder builder, String attributeSuffix, ComparePair pair, EntityMention em,
+      List<Map<String, String>> entityMentionToOutput, Map<String, String> entryToShortname) {
+    if (em != null) {
+      String entity = StringEscapeUtils.escapeXml11(entityMentionToOutput.get(0).get(em.entity));
+      builder.append(" entity" + attributeSuffix + "='" + entity + "'");
+      String shortName = entryToShortname.get(em.entity);
+      int length = pair.end - pair.start;
+      if (shortName != null && shortName.length() > length + 2) {
+        shortName = shortName.substring(0, length + 2) + "…";
+      }
+      builder.append(" short" + attributeSuffix + "='" + Utility.orElse(shortName, "[none]") + "'");
+    } else {
+      //builder.append(" entity='-'");
+      builder.append(" short" + attributeSuffix + "='[none]'");
+    }
   }
 
   private void addAnnotatorInfo(int idx, List<MarkEval> evals, List<EntityMention> principalMentions, StringBuilder builder) {
@@ -558,21 +550,6 @@ public class Compare {
     }
   }
 
-  /*private void doChainAnnotation(ComparePair pair, List<MentionChains> chains, StringBuilder builder) {
-    String chainStr0 = chainAnnotationAttr(0, pair, chains);
-    String chainStr1 = chainAnnotationAttr(1, pair, chains);
-    if (chainStr0 != null || chainStr1 != null) {
-      builder.append("<chain-mark");
-      if (chainStr0 != null) {
-        builder.append(" chain0='" + chainStr0 + "'");
-      }
-      if (chainStr1 != null) {
-        builder.append(" chain1='" + chainStr1 + "'");
-      }
-      builder.append("/>\n");
-    }
-  }*/
-
   /**
    * Generate "(chainidx" or "chainidx" or "chainidx)" strings
    *
@@ -624,9 +601,6 @@ public class Compare {
           log.warn("chainToStr cannot deal with pos type {} for compare pair", pt, pair);
       }
       if (chainStr != null) {
-        /*if (sb.length() > 0) {
-          sb.append(",");
-        }*/
         sb.append(chainStr);
       }
     }
