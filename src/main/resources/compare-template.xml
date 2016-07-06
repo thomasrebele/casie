@@ -29,17 +29,16 @@
 					<title>Jecca</title>
 					<meta charset="UTF-8" />
 					<style>
-						.shortmap { /*float: right;*/ background-color: lightgray; padding: 1em; margin: 1em; font-size: 12px; }
-						.shortmap .entity { font-weight: bold; }
+						.entityList { /*float: right;*/ background-color: lightgray; padding: 1em; margin: 1em; font-size: 12px; }
+						.entityList .entity { font-weight: bold; }
 						.linespacer { font-size: 5px; }
 					
 						.stack {display: inline-flex; flex-direction: column;}
 						span { white-space:nowrap; }
 						
 						/* general style for chain numbers, see style with id "chains" further below */
-						.supsub {display:none; }
-						.supsub span {font-size: 0.6em; display:inline; position:relative;}
-						.superscript { color: darkseagreen; top: -1.5ex; }
+						.chain {display:none; }
+						.chain { color: darkseagreen; top: -1.5ex; }
 						[data-index="1"] .subscript { ; top: -1.75ex; }
 						[data-index="2"] .subscript { ; top: -1.75ex; }
 						.highlight  { text-shadow: .5px 0px .0px, -.5px 0px .0px;} 
@@ -158,8 +157,7 @@
 	
 					<style>
 						styleid { content: 'chains'; }
-						.supsub {display:inline-flex; flex-direction: column;
-						vertical-align:middle; height:1ex; user-select: none;
+						.chain {display:inline; user-select: none;
 						-moz-user-select: none; -khtml-user-select: none; }
 					</style>
 				
@@ -714,9 +712,7 @@
 												}
 											}
 											markSpans[i].setAttribute("data-split", base == "split");
-											console.log("a",eval);
 											if(eval != "split") {
-												console.log("b",eval);
 												// create symbol
 												var toolTipText, index, dest, eval;
 												toolTipText = evalToSymbol(eval);
@@ -936,7 +932,7 @@
 				<xsl:apply-templates select="content"/>
 				</div>
 				<div class="grail-nav">
-				<xsl:apply-templates select="shortmap"/>
+				<xsl:apply-templates select="entity-list"/>
 				</div>
 			</div>
 		</xsl:template>
@@ -984,13 +980,7 @@
 				<table class="overlay">
 					<tr>
 						<!-- opening chain number -->
-						<td>
-							<span class="collapse">
-								<xsl:call-template name="chainImpl">
-									<xsl:with-param name="chain0" select="@chain-before0" />
-								</xsl:call-template>
-							</span>
-						</td>
+						<td></td>
 
 						<!-- text -->
 						<td style="background-color: white;text-align: center;text-shadow: .5px 0px .0px, -.5px 0px .0px;">
@@ -1003,13 +993,7 @@
 						<td><span class="collapse"/></td>
 
 						<!-- closing chain number -->
-						<td>
-							<span class="collapse">
-								<xsl:call-template name="chainImpl">
-									<xsl:with-param name="chain0" select="@chain-after0" />
-								</xsl:call-template>
-							</span>
-						</td>
+						<td></td>
 					</tr>
 					<tr class="annotator">
 						<xsl:attribute name="data-eval">correct</xsl:attribute>
@@ -1019,18 +1003,15 @@
 							<xsl:attribute name="data-{name()}"><xsl:value-of select="."/></xsl:attribute>
 						</xsl:for-each>
 
-						<td>
-								<xsl:call-template name="chainImpl">
-									<xsl:with-param name="chain0" select="@chain-before0" />
-								</xsl:call-template>
+						<td><xsl:call-template name="chainImpl">
+								<xsl:with-param name="chain" select="@chain-before0" />
+							</xsl:call-template>
 						</td>
-						<td class="textColumn entity" style="background-color: white; ">
-							G: <xsl:value-of select="@short0" />
-						</td>
+						<td class="textColumn entity" style="background-color: white; ">G: <xsl:value-of select="@short0" /></td>
 						<td></td>
 						<td>
 								<xsl:call-template name="chainImpl">
-									<xsl:with-param name="chain0" select="@chain-after0" />
+									<xsl:with-param name="chain" select="@chain-after0" />
 								</xsl:call-template>
 						</td>
 					</tr>
@@ -1076,30 +1057,23 @@
 		</xsl:template>
 
 		<xsl:template name="chainImpl">
-			<xsl:param name="chain0"/>
 			<xsl:param name="chain"/>
 
-			<xsl:if test="$chain0 != '' or $chain != ''">
-				<span class="supsub">
-					<span class="superscript">
-						<xsl:value-of select="$chain0" />
-						<xsl:if test="not($chain0)">&#160;</xsl:if>
-					</span>
-					<span class="subscript">
-						<xsl:value-of select="$chain" />
-						<xsl:if test="not($chain)">&#160;</xsl:if>
-					</span>
+			<xsl:if test="$chain != ''">
+				<span class="chain">
+					<xsl:value-of select="$chain" />
+					<xsl:if test="not($chain)">&#160;</xsl:if>
 				</span>
 			</xsl:if>
 		</xsl:template>
 
-		<xsl:template match="shortmap">
-			<div class="shortmap">
-				<b>Abbreviations:</b><br/>
+		<xsl:template match="entity-list">
+			<div class="entityList">
+				<b>Entities:</b><br/>
 				<xsl:apply-templates />
 			</div>
 		</xsl:template>
-		<xsl:template match="shortmap/entry">
+		<xsl:template match="entity-list/entry">
 			<div>
 				<span class="entity"><xsl:value-of select="@key" /></span>: 
 				<xsl:value-of select="@value" /><br/>

@@ -372,14 +372,14 @@ public class Compare {
     }
 
     // output abbreviation legend
-    builder.append("<shortmap>\n");
+    builder.append("<entity-list>\n");
     for (Entry<String, String> e : shortnameToEntry.entrySet()) {
       if (!e.getKey().equals(e.getValue())) {
         builder.append("<entry key='" + e.getKey() + "'");
         builder.append(" value='" + e.getValue() + "'/>\n");
       }
     }
-    builder.append("</shortmap>\n");
+    builder.append("</entity-list>\n");
 
     // iterate over mentions
     builder.append("<content>");
@@ -607,7 +607,7 @@ public class Compare {
         return null;
       }
 
-      String chainStr = "" + c0.idx;
+      String chainStr = "" /*+ c0.idx*/;
       switch (pt) {
         case START:
           chainStr = "(" + chainStr;
@@ -624,9 +624,9 @@ public class Compare {
           log.warn("chainToStr cannot deal with pos type {} for compare pair", pt, pair);
       }
       if (chainStr != null) {
-        if (sb.length() > 0) {
+        /*if (sb.length() > 0) {
           sb.append(",");
-        }
+        }*/
         sb.append(chainStr);
       }
     }
