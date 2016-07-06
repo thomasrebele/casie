@@ -1,9 +1,9 @@
-Jecca: Joint Evaluation and Comparison of Co-reference and Annotations
+Casie: Comparing Annotation Systems for Information Extraction
 ==============
 
 About
 --------------
-Jecca allows you to compare two or more annotated texts.
+Casie allows you to compare two or more annotated texts.
 
 Setup
 --------------
@@ -17,5 +17,5 @@ git submodule update
 
 Live Demos
 --------------
-- [Tutorial](https://thomasrebele.github.io/jecca/tutorial.xml)
-- [Bertrand Russel](https://thomasrebele.github.io/jecca/russel.xml)
+- [Tutorial](https://thomasrebele.github.io/casie/tutorial.xml)
+- [Bertrand Russel](https://thomasrebele.github.io/casie/russel.xml)
