@@ -335,11 +335,12 @@
 								<option value="annotator">annotator</option> 
 								<option value="eval" selected="true">evaluation</option> 
 							</select>
-							Combine same <select id="optCombine" size="1" onchange="updateMode()"> 
-								<option value="eval" selected="true">colors</option> 
-								<option value="entity">entities</option> 
-								<option value="none">nothing</option> 
+							Show <select id="optCombine" size="1" onchange="updateMode()"> 
+								<!-- <option value="eval">color conflicting</option>  -->
+								<option value="entity" selected="true">conflicting</option> 
+								<option value="none">all</option> 
 							</select>
+							annotations
 							<br/>
 
 							<label><input id="showSymbols" type="checkbox" name="symbols"  onchange="cssStyle['symbols'].disabled = !this.checked; updateMode();"/>Show symbols</label>
@@ -498,7 +499,7 @@
 
 							function fillEvalTable(metric){
 								var table = document.getElementById("evalTable");
-								var headerArray=["Annotator", "precision", "recall"];
+								var headerArray=["Annotator", "precision (%)", "recall (%)"];
 								if(document.getElementById("evalTable")!=null){
  									table.innerHTML = "";
  									var header = table.createTHead();
@@ -532,9 +533,9 @@
 										var map=metrics[i].metric[j];
 										if(map["name"]==metric){
 											precisionCell= row.insertCell(1);
-											precisionCell.innerHTML = map["precision"];
+											precisionCell.innerHTML = parseFloat(map["precision"]*100).toFixed(2);
 											recallCell = row.insertCell(2);
-											recallCell.innerHTML = map["recall"];
+											recallCell.innerHTML = parseFloat(map["recall"]*100).toFixed(2);
 										}
 									}
 								 	if(precisionCell== null && recallCell==null){
@@ -571,48 +572,6 @@
 							else {
 								document.getElementById("eval").style.display = "none";
 							}
-							
-							function updateDiagram(metric){   
-								var svg =  document.getElementById('mySVG');
-								if(annotators.length==0 || metrics.length==0 ){
-									console.log("No annotators or metrics for evaluation!");
-								}
-								var childrenNodes = svg.childNodes;
-							
-								
-								for (var l=childrenNodes.length-1;l>=0;l--) {
-						
-							 		if(childrenNodes[l].classList.contains("default")){
-							 			continue;
-							 		}
-								  	svg.removeChild(childrenNodes[l]);
-							 		
-								}
-								
-								for (var i=0;i<annotators.length;i++) {
-								 	var anno=annotators[i]["id"];
-								 	var precision;
-								 	var recall;
- 								 	for(var j=0;j<evalPerAnno.length;j++){
-
-										var evMap=evalPerAnno[j];
-										
-								 		if(evMap.getAttribute("data-annotator")==anno && evMap.getAttribute("data-name")==metric){
-								 			precision = evMap.getAttribute("data-precision");
-								 			recall = evMap.getAttribute("data-recall");
-								 		}
-								 	}
-								 	 
-								 	var precisionSVG=250-Number(precision)*20;
-								 	var recallSVG=100+Number(recall)*20;
-								 	 
-								 	var textSVG  = initElement(svg,'text',{x:precisionSVG, y:recallSVG, fill:'black', style:'font-size:100%', class:"new"});
-								 	textSVG.innerHTML=anno;
-								 	initElement(svg,'circle',{cx:precisionSVG, cy:recallSVG, r:1, fill:'black'});
-
-								}
-							} 
-							/*updateDiagram(metrics[0]);*/
 
 							/* fetch named css styles and store them in a map */
 							var cssStyle = new Array();
@@ -1100,7 +1059,7 @@
 			</td>
 
 			<td class="textColumn entity">
-					A<xsl:value-of select="@index" />: 
+					<!-- A<xsl:value-of select="@index" />:  -->
 					<xsl:value-of select="@short" />
 				<!--<xsl:value-of select=".." />-->
 			</td>

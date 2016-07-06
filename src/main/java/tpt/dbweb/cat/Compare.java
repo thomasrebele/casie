@@ -365,6 +365,7 @@ public class Compare {
       int i = 0;
       for (String c : e.getValue()) {
         String shortname = e.getKey() + (e.getValue().size() <= 1 ? "" : (++i));
+        shortname = c;
         entryToShortname.put(c, shortname);
         shortnameToEntry.put(shortname, c);
       }
@@ -373,8 +374,10 @@ public class Compare {
     // output abbreviation legend
     builder.append("<shortmap>\n");
     for (Entry<String, String> e : shortnameToEntry.entrySet()) {
-      builder.append("<entry key='" + e.getKey() + "'");
-      builder.append(" value='" + e.getValue() + "'/>\n");
+      if (!e.getKey().equals(e.getValue())) {
+        builder.append("<entry key='" + e.getKey() + "'");
+        builder.append(" value='" + e.getValue() + "'/>\n");
+      }
     }
     builder.append("</shortmap>\n");
 
@@ -417,10 +420,10 @@ public class Compare {
         EntityMention em = principalMentions.get(0);
         if (em != null) {
           builder.append(" entity0='" + entityMentionToOutput.get(0).get(em.entity) + "'");
-          builder.append(" short0='" + Utility.orElse(entryToShortname.get(em.entity), "-") + "'");
+          builder.append(" short0='" + Utility.orElse(entryToShortname.get(em.entity), "[none]") + "'");
         } else {
           //builder.append(" entity='-'");
-          builder.append(" short0='-'");
+          builder.append(" short0='[none]'");
         }
 
         // TODO: how to deal with additional information?
@@ -444,10 +447,10 @@ public class Compare {
           em = principalMentions.get(i);
           if (em != null) {
             builder.append(" entity='" + StringEscapeUtils.escapeXml11(em.entity) + "'");
-            builder.append(" short='" + Utility.orElse(entryToShortname.get(em.entity), "-") + "'");
+            builder.append(" short='" + Utility.orElse(entryToShortname.get(em.entity), "[none]") + "'");
           } else {
             //builder.append(" entity='-'");
-            builder.append(" short='-'");
+            builder.append(" short='[none]'");
           }
           if (evals.get(i).eval != null) {
             builder.append(" eval='" + evals.get(i).eval + "'");
