@@ -348,7 +348,7 @@ public class Compare {
     // generate new entity names for human output
     List<Map<String, String>> entityMentionToOutput = new ArrayList<>();
     entityMentionToOutput.add(getEntityRenameMap(mentions.get(0), options.humanReadableMentions, null));
-    for (int i = 0; i < mentions.size(); i++) {
+    for (int i = 1; i < mentions.size(); i++) {
       entityMentionToOutput.add(getEntityRenameMap(mentions.get(i), options.humanReadableMentions, chains.get(0)));
     }
     // map chains to abbreviations
@@ -417,7 +417,7 @@ public class Compare {
         builder.append(" split='" + Boolean.toString(split) + "'");
         // add entity and other information
         EntityMention em = principalMentions.get(0);
-        printEntityAttributes(builder, "0", pair, em, entityMentionToOutput, entryToShortname);
+        printEntityAttributes(builder, "0", pair, em, entityMentionToOutput.get(0), entryToShortname);
 
         addChainInfo("0", evals.get(0), builder);
         builder.append(">");
@@ -426,7 +426,7 @@ public class Compare {
         for (int i = 1; i < mentions.size(); i++) {
           builder.append("<annotator index='" + i + "'");
           em = principalMentions.get(i);
-          printEntityAttributes(builder, "", pair, em, entityMentionToOutput, entryToShortname);
+          printEntityAttributes(builder, "", pair, em, entityMentionToOutput.get(i), entryToShortname);
           if (evals.get(i).eval != null) {
             builder.append(" eval='" + evals.get(i).eval + "'");
             addAnnotatorInfo(i, evals, principalMentions, builder);
@@ -456,9 +456,9 @@ public class Compare {
   }
 
   private void printEntityAttributes(StringBuilder builder, String attributeSuffix, ComparePair pair, EntityMention em,
-      List<Map<String, String>> entityMentionToOutput, Map<String, String> entryToShortname) {
+      Map<String, String> entityMentionToOutput, Map<String, String> entryToShortname) {
     if (em != null) {
-      String entity = StringEscapeUtils.escapeXml11(entityMentionToOutput.get(0).get(em.entity));
+      String entity = StringEscapeUtils.escapeXml11(entityMentionToOutput.get(em.entity));
       builder.append(" entity" + attributeSuffix + "='" + entity + "'");
       String shortName = entryToShortname.get(em.entity);
       int length = pair.end - pair.start;

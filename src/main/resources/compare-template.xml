@@ -21,9 +21,6 @@
 
 		<!-- html skeleton -->
 		<xsl:template match="/">
-			<xsl:variable name="color1">#e68a2f</xsl:variable>
-			<xsl:variable name="color2">#2f31e6</xsl:variable>
-			
 			<html xmlns:x="http://telecom-paristech.fr/namespace/">
 				<head>
 					<title>Casie</title>
@@ -169,7 +166,7 @@
 						/* using HolyGrail from https://philipwalton.github.io/solved-by-flexbox/demos/holy-grail/ */
 						.grail, .grail-body { display: flex; flex-direction: column; }
 						.grail-content { flex: 1; }
-						.grail-nav { order: 1; }
+						.grail-nav { order: -1; }
 						@media ( min-width : 750px) {
 							.grail-body { flex-direction: row; flex: 1; }
 							.grail-content { flex: 1; }
@@ -314,15 +311,14 @@
 				<body class="grail">
 					<div class="grail-body">
 					<div id="wrapper" class="grail-content">
-						<div class="titlebar" style="position: relative">
-							Casie
-						</div>
-					
 						<div id="content">
 							<xsl:apply-templates /> 
 						</div>
 					</div>
-					<div id="wrapper2" class="grail-nav" style="font-size: 80%;">
+					<div id="wrapper2" class="grail-nav" style="font-size: 80%; border-right: 1px solid; padding-right: 10px;">
+						<div class="titlebar" style="position: relative">
+							Casie
+						</div>
 						<div>
 							<h3 style="background-color: #333;color:white;"> Options </h3>
 							<!--<select class='menu' id="optDoc" size="2" onchange="document.getElementById('content').onclick()"> 
@@ -373,7 +369,7 @@
 							<span class="highlightMode"><br/>
 								<span class="annotator highlight" data-eval="correct"><span>correct</span></span><br/>
 								<span class="annotator highlight" data-eval="wrong"><span>wrong</span></span><br/>
-								<span class="annotator highlight rightchain"><span>gold standard entity group</span></span><br/>
+								<!-- <span class="annotator highlight rightchain" data-eval="correct"><span>gold standard entity group</span></span><br/>-->
 								<!-- <span class="annotator highlight" data-eval="missing">missing</span>
 								<span class="annotator highlight rightchain">in right chain</span><br/>
 								<span class="annotator highlight wrongchain">in wrong chain</span><br/>
@@ -789,13 +785,19 @@
 										}
 										for(var j=0; j<annotatorSpans.length; j++) {
 											var annotatorSpan = annotatorSpans[j];
-											annotatorSpan.classList.add("highlight");
-											if(ancestorWithClass(annotatorSpan, "mark").getAttribute("data-entity0") == goldEntity) {
+											var highlight = annotatorSpan.getAttribute("data-entity") == thisEntity;
+											if(ancestorWithClass(annotatorSpan, "mark").getAttribute("data-entity0") == goldEntity &&
+													annotatorSpan.getAttribute("data-index") == "0") {
 												annotatorSpan.classList.add("rightchain");
+												highlight = true;
 											}
 
 											if(annotatorSpan.getAttribute("data-entity") == thisEntity && ancestor.getAttribute("data-eval") != "correct") {
 												annotatorSpan.classList.add("wrongchain");
+												highlight = true;
+											}
+											if(highlight) {
+												annotatorSpan.classList.add("highlight");
 											}
 										}
 									}
