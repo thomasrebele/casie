@@ -680,17 +680,21 @@
 											}
 											else {
 												var combineAttribute = "data-entity";
-												for(var j=1; j<annotators.length; j++) {
+												for(var j=0; j<annotators.length; j++) {
 													if(isEnabled("" + j)) {
 														// always split highlighted spans
-														if(annotatorSpans[j].classList.contains("highlight")) {
-															base = "split";
+														if(highlightMode) {
+															if(annotatorSpans[j].classList.contains("highlight")) {
+																base = "split";
+															}
 														}
-														var val = annotatorSpans[j].getAttribute(combineAttribute) || "";
-														base = accumulate(base, val, "split");
-														if(j>0) {
-															var val = annotatorSpans[j].getAttribute("data-eval") || "";
-															eval = accumulate(eval, val, "split");
+														else {
+															var val = annotatorSpans[j].getAttribute(combineAttribute) || "";
+															base = accumulate(base, val, "split");
+															if(j>0) {
+																var val = annotatorSpans[j].getAttribute("data-eval") || "";
+																eval = accumulate(eval, val, "split");
+															}
 														}
 													}
 												}
@@ -786,7 +790,8 @@
 										for(var j=0; j<annotatorSpans.length; j++) {
 											var annotatorSpan = annotatorSpans[j];
 											var highlight = annotatorSpan.getAttribute("data-entity") == thisEntity;
-											if(ancestorWithClass(annotatorSpan, "mark").getAttribute("data-entity0") == goldEntity &&
+											var markSpan = ancestorWithClass(annotatorSpan, "mark");
+											if(markSpan.getAttribute("data-entity0") == goldEntity &&
 													annotatorSpan.getAttribute("data-index") == "0") {
 												annotatorSpan.classList.add("rightchain");
 												highlight = true;

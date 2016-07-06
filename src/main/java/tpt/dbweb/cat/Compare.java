@@ -462,8 +462,8 @@ public class Compare {
       builder.append(" entity" + attributeSuffix + "='" + entity + "'");
       String shortName = entryToShortname.get(em.entity);
       int length = pair.end - pair.start;
-      if (shortName != null && shortName.length() > length + 2) {
-        shortName = shortName.substring(0, length + 2) + "…";
+      if (shortName != null && shortName.length() > length + 5) {
+        shortName = shortName.substring(0, length + 5) + "…";
       }
       builder.append(" short" + attributeSuffix + "='" + Utility.orElse(shortName, "[none]") + "'");
     } else {
