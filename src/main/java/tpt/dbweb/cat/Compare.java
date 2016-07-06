@@ -288,7 +288,7 @@ public class Compare {
     sb.append("<metrics>\n");
     for (int i = 0; i < evaluations.size(); i++) {
       Map<String, EvaluationStatistics> map = evaluations.get(i);
-      sb.append("<annotator id='" + i + "'>\n");
+      sb.append("<annotator id='" + (i + 1) + "'>\n");
       for (String name : map.keySet()) {
         sb.append("    <metric name='" + name + "'");
         EvaluationStatistics es = map.get(name);
@@ -374,10 +374,9 @@ public class Compare {
     // output abbreviation legend
     builder.append("<entity-list>\n");
     for (Entry<String, String> e : shortnameToEntry.entrySet()) {
-      if (!e.getKey().equals(e.getValue())) {
-        builder.append("<entry key='" + e.getKey() + "'");
-        builder.append(" value='" + e.getValue() + "'/>\n");
-      }
+      builder.append("<entry>");
+      builder.append(StringEscapeUtils.escapeXml10(e.getValue()));
+      builder.append("</entry>\n");
     }
     builder.append("</entity-list>\n");
 

@@ -26,11 +26,11 @@
 			
 			<html xmlns:x="http://telecom-paristech.fr/namespace/">
 				<head>
-					<title>Jecca</title>
+					<title>Casie</title>
 					<meta charset="UTF-8" />
 					<style>
 						.entityList { /*float: right;*/ background-color: lightgray; padding: 1em; margin: 1em; font-size: 12px; }
-						.entityList .entity { font-weight: bold; }
+						.entityList .entity { /*font-weight: bold;*/ }
 						.linespacer { font-size: 5px; }
 					
 						.stack {display: inline-flex; flex-direction: column;}
@@ -117,6 +117,7 @@
 						styleid { content: 'coloring:eval'; }
 						/* styles for evaluation */
 						[data-eval="correct"].highlight * { color: green; }
+						[data-eval=""].highlight * { color: green; }
 						[data-eval="toomuch"].highlight * { color: red; }
 						[data-eval="missing"].highlight * { color: red; }
 						[data-eval="wrong"].highlight * { color: red; }
@@ -314,7 +315,7 @@
 					<div class="grail-body">
 					<div id="wrapper" class="grail-content">
 						<div class="titlebar" style="position: relative">
-							Jecca
+							Casie
 						</div>
 					
 						<div id="content">
@@ -329,21 +330,11 @@
 								<option value="onePerTime">One at a time</option> 
 							</select>-->
 
-							<select class='menu' id="optColor" size="2" onchange="updateMode()" style="display: none;"> 
-								<option value="annotator">annotator</option> 
-								<option value="eval" selected="true">evaluation</option> 
-							</select>
-							Show <select id="optCombine" size="1" onchange="updateMode()"> 
-								<!-- <option value="eval">color conflicting</option>  -->
-								<option value="entity" selected="true">conflicting</option> 
-								<option value="none">all</option> 
-							</select>
-							annotations
+							<label><input id="showConflicts" type="checkbox" name="symbols" checked="checked" onchange="updateMode();"/>conflicts</label>
 							<br/>
-
-							<label><input id="showSymbols" type="checkbox" name="symbols"  onchange="cssStyle['symbols'].disabled = !this.checked; updateMode();"/>Show symbols</label>
+							<label><input id="showSymbols" type="checkbox" name="symbols"  onchange="cssStyle['symbols'].disabled = !this.checked; updateMode();"/>symbols</label>
 							<br/>
-							<label><input id="showChains" type="checkbox" name="chains" onchange="cssStyle['chains'].disabled = !this.checked; updateMode();"/>Show span limits</label>
+							<label><input id="showChains" type="checkbox" name="chains" onchange="cssStyle['chains'].disabled = !this.checked; updateMode();"/>span limits</label>
 						</div>
 						<div>
 							<h3 style="background-color: #333;color:white;"> Annotators </h3>
@@ -380,8 +371,9 @@
 								<!-- <span data-eval="missing">missing</span> -->
 							</span>
 							<span class="highlightMode"><br/>
-								<span class="annotator highlight" data-eval="correct">correct</span><br/>
-								<span class="annotator highlight" data-eval="wrong">wrong</span><br/>
+								<span class="annotator highlight" data-eval="correct"><span>correct</span></span><br/>
+								<span class="annotator highlight" data-eval="wrong"><span>wrong</span></span><br/>
+								<span class="annotator highlight rightchain"><span>gold standard entity group</span></span><br/>
 								<!-- <span class="annotator highlight" data-eval="missing">missing</span>
 								<span class="annotator highlight rightchain">in right chain</span><br/>
 								<span class="annotator highlight wrongchain">in wrong chain</span><br/>
@@ -497,7 +489,7 @@
 
 							function fillEvalTable(metric){
 								var table = document.getElementById("evalTable");
-								var headerArray=["Annotator", "precision (%)", "recall (%)"];
+								var headerArray=["Anno&shy;tator", "P (%)", "R (%)"];
 								if(document.getElementById("evalTable")!=null){
  									table.innerHTML = "";
  									var header = table.createTHead();
@@ -521,10 +513,10 @@
 								}
 								
 								for (var i=0;i<metrics.length;i++) {
-									var anno=annotators[i]["id"];
+									var anno=metrics[i]["id"];
 									var row= table.insertRow(-1);
 									var annoCell = row.insertCell(0);
-									annoCell.innerHTML = "Anno "+anno;
+									annoCell.innerHTML = anno;
 									var precisionCell=null;
 									var recallCell=null;
 									for(var j=0;j<metrics[i].metric.length;j++){
@@ -536,9 +528,9 @@
 											recallCell.innerHTML = parseFloat(map["recall"]*100).toFixed(2);
 										}
 									}
-								 	if(precisionCell== null && recallCell==null){
-								 		table.deleteRow(table.getElementsByTagName("TR").length-1);
-									}	
+									if(precisionCell== null && recallCell==null){
+										table.deleteRow(table.getElementsByTagName("TR").length-1);
+									}
 								}
 							
 								var p = highlightCell(1);
@@ -629,18 +621,16 @@
 							function updateMode() {
 								var coloringGroup;
 								var highlightMode = content.querySelectorAll(".highlight").length > 0;
-								var optColor = document.getElementById("optColor");
 								if(highlightMode) {
 									coloringGroup = "coloringHighlight";
 									selectStyle(cssGroup["highlighting"], "enabled");
 									selectStyle(cssGroup["coloring"], null);
-									//selectStyle(cssGroup[coloringGroup], "chains");
-									selectStyle(cssGroup[coloringGroup], optColor.options[optColor.selectedIndex].value);
+									selectStyle(cssGroup[coloringGroup], "eval");
 								} else {
 									coloringGroup = "coloring";
 									selectStyle(cssGroup["highlighting"], "disabled");
 									selectStyle(cssGroup["coloringHighlight"], null);
-									selectStyle(cssGroup[coloringGroup], optColor.options[optColor.selectedIndex].value);
+									selectStyle(cssGroup[coloringGroup], "eval");
 								}
 
 								var sheet = cssStyle["annotatorVisibility"];
@@ -679,10 +669,6 @@
 											var annotatorSpans = markSpans[i].getElementsByClassName("annotator");
 											// TODO: fix bug if wrongly tagged by second annotator
 											
-											var optCombine = document.getElementById("optCombine");
-											var combineAttribute = "data-" + optCombine.options[optCombine.selectedIndex].value;
-											var startJ = 1-optCombine.selectedIndex;
-											
 											/* used to check whether some values have the same value */
 											function accumulate(lastVal, newVal, disagreementValue) {
 												if( lastVal == disagreementValue || (lastVal == null ? newVal : lastVal) != newVal) {
@@ -692,11 +678,13 @@
 													return lastVal || newVal;
 												}
 											}
-											if(combineAttribute == "data-none") {
+											var showConflicts = document.getElementById("showConflicts");
+											if(!showConflicts.checked) {
 												base = "split";
 											}
 											else {
-												for(var j=startJ; j<annotators.length; j++) {
+												var combineAttribute = "data-entity";
+												for(var j=1; j<annotators.length; j++) {
 													if(isEnabled("" + j)) {
 														// always split highlighted spans
 														if(annotatorSpans[j].classList.contains("highlight")) {
@@ -931,9 +919,9 @@
 				<div class="grail-content">
 				<xsl:apply-templates select="content"/>
 				</div>
-				<div class="grail-nav">
+				<!-- <div class="grail-nav">
 				<xsl:apply-templates select="entity-list"/>
-				</div>
+				</div> -->
 			</div>
 		</xsl:template>
 
@@ -1068,15 +1056,14 @@
 		</xsl:template>
 
 		<xsl:template match="entity-list">
-			<div class="entityList">
+			<div class="entityList" style="display:none;">
 				<b>Entities:</b><br/>
 				<xsl:apply-templates />
 			</div>
 		</xsl:template>
 		<xsl:template match="entity-list/entry">
 			<div>
-				<span class="entity"><xsl:value-of select="@key" /></span>: 
-				<xsl:value-of select="@value" /><br/>
+				<span class="entity"><xsl:value-of select="." /></span><br/>
 			</div>
 		</xsl:template>
 
