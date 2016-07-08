@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <?xml-stylesheet type="text/xml" href="#stylesheet"?>
 <!DOCTYPE doc [
 <!ATTLIST xsl:stylesheet id	ID	#REQUIRED>
@@ -18,24 +21,23 @@
 
 		<!-- html skeleton -->
 		<xsl:template match="/">
-			<xsl:variable name="color1">#e68a2f</xsl:variable>
-			<xsl:variable name="color2">#2f31e6</xsl:variable>
-			<xsl:variable name="color1and2">#000000</xsl:variable>
-			
 			<html xmlns:x="http://telecom-paristech.fr/namespace/">
 				<head>
-					<title>Jecca</title>
+					<title>Casie</title>
 					<meta charset="UTF-8" />
 					<style>
+						.entityList { /*float: right;*/ background-color: lightgray; padding: 1em; margin: 1em; font-size: 12px; }
+						.entityList .entity { /*font-weight: bold;*/ }
+						.linespacer { font-size: 5px; }
+					
 						.stack {display: inline-flex; flex-direction: column;}
 						span { white-space:nowrap; }
 						
 						/* general style for chain numbers, see style with id "chains" further below */
-						.supsub {display:none; }
-						.supsub span {font-size: 0.6em; display:inline; position:relative;}
-						.superscript { color: darkseagreen; top: -1.5ex; }
-						[data-index="1"] .subscript { color: <xsl:value-of select="$color1"/> ; top: -1.75ex; }
-						[data-index="2"] .subscript { color: <xsl:value-of select="$color2"/>; top: -1.75ex; }
+						.chain {display:none; }
+						.chain { color: darkseagreen; top: -1.5ex; }
+						[data-index="1"] .subscript { ; top: -1.75ex; }
+						[data-index="2"] .subscript { ; top: -1.75ex; }
 						.highlight  { text-shadow: .5px 0px .0px, -.5px 0px .0px;} 
 						
 						/* combine elements according to split attribute */
@@ -48,7 +50,7 @@
 						.highlight .combined { visibility: hidden; }
 						.highlight .annotator { visibility: visible; }
 
-						table.overlay { display: inline-block; vertical-align: top; }
+						table.overlay { display: inline-block; vertical-align: top; /*line-height: 100%; */}
 						.combined, .combined td { height: 0px; }
 						.combined td .collapse {
 							height: 0px;
@@ -63,17 +65,32 @@
 						}
 
 						table.overlay td:nth-child(1) { text-align: right; }
-						table.overlay td:nth-child(2) { text-align: left; }
+						table.overlay not(tr:nth-child(0)) td:nth-child(2) {
+							text-align: center; 
+						}
 						table.overlay td:nth-child(4) { text-align: left; }
+						table.overlay .annotator .textColumn {
+							font-size: 12px;
+						}
+						.entity { font-style: italic; }
 						
 						.combined, [data-index] { color: grey; }
 						.symbol, .symbols { display: none; }
 
-  						 .left{
-				          display: block;
-        				  float:left; 
-     					  width:50%;
-					    }
+						.left{
+							display: block;
+							float:left; 
+							width:50%;
+						}
+						
+						.noselect {
+							-webkit-touch-callout: none;
+							-webkit-user-select: none;
+							-khtml-user-select: none;
+							-moz-user-select: none;
+							-ms-user-select: none;
+							user-select: none;
+						}
 					</style>
 					<!-- container for annotator visibility rules -->
 					<style>
@@ -83,11 +100,8 @@
 					
 					<style>
 						styleid { content: 'coloring:annotators'; }
-						[data-split="false"] .highlight .annotator:first-child { color: <xsl:value-of select="$color1and2"/>; text-shadow: .5px 0px .0px, -.5px 0px .0px;} /* color1and2 */
-						[data-split="false"]:hover .highlight .annotator:first-child { color: <xsl:value-of select="$color1"/>; }
+						[data-split="false"] .highlight .annotator:first-child { text-shadow: .5px 0px .0px, -.5px 0px .0px;}
 						
-						[data-index="1"]:not([data-eval=""]).highlight { color: <xsl:value-of select="$color1"/>; }
-						[data-index="2"]:not([data-eval=""]).highlight { color: <xsl:value-of select="$color2"/>; }
 					</style>
 					<style>
 						styleid { content: 'coloring:noAnno'; }
@@ -98,13 +112,12 @@
 					</style>
 					<style>
 						styleid { content: 'coloring:eval'; }
-						[data-index="1"].highlight .symbol { color: <xsl:value-of select="$color1"/>; }
-						[data-index="2"].highlight .symbol { color: <xsl:value-of select="$color2"/>; }
 						/* styles for evaluation */
-						[data-eval="correct"].highlight { color: green; }
-						[data-eval="toomuch"].highlight { color: red; }
-						[data-eval="missing"].highlight { color: DarkSlateBlue; }
-						[data-eval="wrong"].highlight { color: red; }
+						[data-eval="correct"].highlight * { color: green; }
+						[data-eval=""].highlight * { color: green; }
+						[data-eval="toomuch"].highlight * { color: red; }
+						[data-eval="missing"].highlight * { color: red; }
+						[data-eval="wrong"].highlight * { color: red; }
 					</style>
 					<style>
 						styleid { content: 'coloring:diff'; }
@@ -123,6 +136,7 @@
 						[data-index] { color: gray; }
 						.highlightMode { display: initial; }
 						.defaultMode { display: none; }
+						.rightchain { text-decoration: underline; }
 					</style>
 					<style>
 						styleid { content: 'highlighting:disabled'; }
@@ -134,14 +148,14 @@
 						styleid { content: 'symbols'; }
 						.symbols { display: initial; }
 						.symbol { display: initial; position: relative; bottom: 1ex; font-size: small; }
+						[data-split="true"] .grouped-symbols, table.overlay:hover .grouped-symbols { display: none; }
 						/*[data-split="false"] .symbols { position: relative; }
 						[data-split="false"] .symbols .single-symbol { position: absolute; left: 0px; }*/
 					</style>
 	
 					<style>
 						styleid { content: 'chains'; }
-						.supsub {display:inline-flex; flex-direction: column;
-						vertical-align:middle; height:1ex; user-select: none;
+						.chain {display:inline; user-select: none;
 						-moz-user-select: none; -khtml-user-select: none; }
 					</style>
 				
@@ -152,8 +166,8 @@
 						/* using HolyGrail from https://philipwalton.github.io/solved-by-flexbox/demos/holy-grail/ */
 						.grail, .grail-body { display: flex; flex-direction: column; }
 						.grail-content { flex: 1; }
-						.grail-nav { order: 1; }
-						@media ( min-width : 568px) {
+						.grail-nav { order: -1; }
+						@media ( min-width : 750px) {
 							.grail-body { flex-direction: row; flex: 1; }
 							.grail-content { flex: 1; }
 							.grail-nav { /* 10em is the width of the columns */ flex: 0 0 10em; margin: 0 10px 0 10px ;}
@@ -297,45 +311,14 @@
 				<body class="grail">
 					<div class="grail-body">
 					<div id="wrapper" class="grail-content">
-						<div class="titlebar" style="position: relative">
-								Jecca
-								<div style="position: absolute; top:0; bottom:0; right:0;">
-								<svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; top:calc(+15%);right:0;" height="70%" viewBox="0 0 76 50">
-									<ellipse cx="38" cy="27" fill="#fff" stroke="#000" stroke-width=".7" rx="24" ry="22"/>
-									<ellipse cx="32" cy="25" ry="2" rx="2"/>
-									<ellipse cx="44" cy="25" ry="2" rx="2"/>
-									<g stroke="#000">
-										<g fill="none">
-											<path d="M35 27s2-12-3-12c-6 0-7 8-4 12 1 2 7 0 7 0z"/>
-											<path d="M40 27s-2-12 4-12c5 0 6 9 4 12-2 2-8 0-8 0z"/>
-											<path d="M38 34c-5 6-10 3-10 3"/>
-											<path d="M38 34c5 6 10 3 10 3"/>
-										</g>
-										<g fill="#fff">
-											<path d="M36 30c-2 0 2 3 2 3s5-3 2-3z" />
-											<path d="M37 7C26-1 25 1 23 1c-1 1-2 10-3 15"/>
-											<path d="M20 16c0-17 1-20 13-5"/>
-											<path d="M37 7c11-8 13-6 15-6 1 1 2 10 2 15"/>
-											<path d="M54 16c0-17-1-21-12-6"/>
-										</g>
-										<g stroke-width=".5">
-											<path d="M47 34l27 6"/>
-											<path d="M47 31l26-8"/>
-											<path d="M47 32l29-2"/>
-											<path d="M30 34L2 40"/>
-											<path d="M29 31L4 23"/>
-											<path d="M30 33L0 31"/>
-										</g>
-									</g>
-								</svg>
-								</div>
-						</div>
-					
 						<div id="content">
 							<xsl:apply-templates /> 
 						</div>
 					</div>
-					<div id="wrapper2" class="grail-nav">
+					<div id="wrapper2" class="grail-nav" style="font-size: 80%; border-right: 1px solid; padding-right: 10px;">
+						<div class="titlebar" style="position: relative">
+							Casie
+						</div>
 						<div>
 							<h3 style="background-color: #333;color:white;"> Options </h3>
 							<!--<select class='menu' id="optDoc" size="2" onchange="document.getElementById('content').onclick()"> 
@@ -343,19 +326,11 @@
 								<option value="onePerTime">One at a time</option> 
 							</select>-->
 
-							<select class='menu' id="optColor" size="2" onchange="updateMode()" style="display: none;"> 
-								<option value="annotator">annotator</option> 
-								<option value="eval" selected="true">evaluation</option> 
-							</select>
-							Combine same <select id="optCombine" size="1" onchange="updateMode()"> 
-								<option value="eval" selected="true">colors</option> 
-								<option value="entity">entities</option> 
-							</select>
+							<label><input id="showConflicts" type="checkbox" name="symbols" checked="checked" onchange="updateMode();"/>conflicts</label>
 							<br/>
-
-							<label><input id="showSymbols" type="checkbox" name="symbols"  onchange="cssStyle['symbols'].disabled = !this.checked; updateMode();"/>Show symbols</label>
+							<label><input id="showSymbols" type="checkbox" name="symbols"  onchange="cssStyle['symbols'].disabled = !this.checked; updateMode();"/>symbols</label>
 							<br/>
-							<label><input id="showChains" type="checkbox" name="chains" onchange="cssStyle['chains'].disabled = !this.checked; updateMode();"/>Show entity numbers</label>
+							<label><input id="showChains" type="checkbox" name="chains" onchange="cssStyle['chains'].disabled = !this.checked; updateMode();"/>span limits</label>
 						</div>
 						<div>
 							<h3 style="background-color: #333;color:white;"> Annotators </h3>
@@ -384,17 +359,21 @@
 								</div> -->
 							</div>
 						</div>
-						<div style="font-size: 70%; margin-top: 2ex;">
+						<div style="font-size: 80%; margin-top: 2ex;">
 							* colors:
 							<span class="defaultMode"><br/>
-								<span data-eval="correct">correct</span><br/>
-								<span data-eval="wrong">wrong</span><br/>
-								<span data-eval="missing">missing</span>
+								<span data-eval="correct"><span>correct</span></span><br/>
+								<span data-eval="wrong"><span>wrong</span></span><br/>
+								<!-- <span data-eval="missing">missing</span> -->
 							</span>
 							<span class="highlightMode"><br/>
+								<span class="annotator highlight" data-eval="correct"><span>correct</span></span><br/>
+								<span class="annotator highlight" data-eval="wrong"><span>wrong</span></span><br/>
+								<!-- <span class="annotator highlight rightchain" data-eval="correct"><span>gold standard entity group</span></span><br/>-->
+								<!-- <span class="annotator highlight" data-eval="missing">missing</span>
 								<span class="annotator highlight rightchain">in right chain</span><br/>
 								<span class="annotator highlight wrongchain">in wrong chain</span><br/>
-								<span class="annotator highlight rightchain wrongchain">in both chains</span>
+								<span class="annotator highlight rightchain wrongchain">in both chains</span> -->
 							</span>
 
 						</div>
@@ -449,9 +428,18 @@
 							
 
 							/*To dynamically create the annotator checkboxes*/
-							for(var k=1;k<annotators.length;k++){
-								initElement(document.getElementById('annotators'),'input',{type:'checkbox', id:"checkTag"+annotators[k]["id"], name:'annotator'+annotators[k]["id"] ,value:"annotator"+annotators[k]["id"], onchange:"updateMode();", checked:'checked'});
-								elementLabeling("Anno "+annotators[k]["id"],"checkTag"+annotators[k]["id"],document.getElementById('annotators'));
+							for(var k=0;k<annotators.length;k++){
+								var id = annotators[k]["id"];
+								var name = "annotator "+id;
+								var attributes = {
+									type:'checkbox', id:"checkTag"+id, name:'annotator'+id, value:"annotator"+id,
+									onchange:"updateMode();", checked:'checked'};
+								if(k==0) {
+									name = "gold standard";
+									delete attributes['checked'];
+								}
+								initElement(document.getElementById('annotators'),'input',attributes);
+								elementLabeling(name,"checkTag"+annotators[k]["id"],document.getElementById('annotators'));
 								if(k<annotators.length-1){
 									var br = document.createElement('br');
 									document.getElementById('annotators').appendChild(br);
@@ -497,7 +485,7 @@
 
 							function fillEvalTable(metric){
 								var table = document.getElementById("evalTable");
-								var headerArray=["Annotator", "precision", "recall"];
+								var headerArray=["Anno&shy;tator", "P (%)", "R (%)"];
 								if(document.getElementById("evalTable")!=null){
  									table.innerHTML = "";
  									var header = table.createTHead();
@@ -521,24 +509,24 @@
 								}
 								
 								for (var i=0;i<metrics.length;i++) {
-									var anno=annotators[i]["id"];
+									var anno=metrics[i]["id"];
 									var row= table.insertRow(-1);
 									var annoCell = row.insertCell(0);
-									annoCell.innerHTML = "Anno "+anno;
+									annoCell.innerHTML = anno;
 									var precisionCell=null;
 									var recallCell=null;
 									for(var j=0;j<metrics[i].metric.length;j++){
 										var map=metrics[i].metric[j];
 										if(map["name"]==metric){
 											precisionCell= row.insertCell(1);
-											precisionCell.innerHTML = map["precision"];
+											precisionCell.innerHTML = parseFloat(map["precision"]*100).toFixed(2);
 											recallCell = row.insertCell(2);
-											recallCell.innerHTML = map["recall"];
+											recallCell.innerHTML = parseFloat(map["recall"]*100).toFixed(2);
 										}
 									}
-								 	if(precisionCell== null && recallCell==null){
-								 		table.deleteRow(table.getElementsByTagName("TR").length-1);
-									}	
+									if(precisionCell== null && recallCell==null){
+										table.deleteRow(table.getElementsByTagName("TR").length-1);
+									}
 								}
 							
 								var p = highlightCell(1);
@@ -570,48 +558,6 @@
 							else {
 								document.getElementById("eval").style.display = "none";
 							}
-							
-							function updateDiagram(metric){   
-								var svg =  document.getElementById('mySVG');
-								if(annotators.length==0 || metrics.length==0 ){
-									console.log("No annotators or metrics for evaluation!");
-								}
-								var childrenNodes = svg.childNodes;
-							
-								
-								for (var l=childrenNodes.length-1;l>=0;l--) {
-						
-							 		if(childrenNodes[l].classList.contains("default")){
-							 			continue;
-							 		}
-								  	svg.removeChild(childrenNodes[l]);
-							 		
-								}
-								
-								for (var i=0;i<annotators.length;i++) {
-								 	var anno=annotators[i]["id"];
-								 	var precision;
-								 	var recall;
- 								 	for(var j=0;j<evalPerAnno.length;j++){
-
-										var evMap=evalPerAnno[j];
-										
-								 		if(evMap.getAttribute("data-annotator")==anno && evMap.getAttribute("data-name")==metric){
-								 			precision = evMap.getAttribute("data-precision");
-								 			recall = evMap.getAttribute("data-recall");
-								 		}
-								 	}
-								 	 
-								 	var precisionSVG=250-Number(precision)*20;
-								 	var recallSVG=100+Number(recall)*20;
-								 	 
-								 	var textSVG  = initElement(svg,'text',{x:precisionSVG, y:recallSVG, fill:'black', style:'font-size:100%', class:"new"});
-								 	textSVG.innerHTML=anno;
-								 	initElement(svg,'circle',{cx:precisionSVG, cy:recallSVG, r:1, fill:'black'});
-
-								}
-							} 
-							/*updateDiagram(metrics[0]);*/
 
 							/* fetch named css styles and store them in a map */
 							var cssStyle = new Array();
@@ -671,17 +617,16 @@
 							function updateMode() {
 								var coloringGroup;
 								var highlightMode = content.querySelectorAll(".highlight").length > 0;
-								var optColor = document.getElementById("optColor");
 								if(highlightMode) {
 									coloringGroup = "coloringHighlight";
 									selectStyle(cssGroup["highlighting"], "enabled");
 									selectStyle(cssGroup["coloring"], null);
-									selectStyle(cssGroup[coloringGroup], "chains");
+									selectStyle(cssGroup[coloringGroup], "eval");
 								} else {
 									coloringGroup = "coloring";
 									selectStyle(cssGroup["highlighting"], "disabled");
 									selectStyle(cssGroup["coloringHighlight"], null);
-									selectStyle(cssGroup[coloringGroup], optColor.options[optColor.selectedIndex].value);
+									selectStyle(cssGroup[coloringGroup], "eval");
 								}
 
 								var sheet = cssStyle["annotatorVisibility"];
@@ -689,11 +634,10 @@
 									sheet.deleteRule(0);
 								}
 								function isEnabled(index) {
-									if(index==0) return false;
 									return document.getElementById('checkTag' + index).checked;
 								}
 								var enabledTaggers = new Array();
-								for(var i=1; i<annotators.length; i++) {
+								for(var i=0; i<annotators.length; i++) {
 									if(isEnabled(annotators[i]["id"])) {
 										enabledTaggers.push(annotators[i]["id"]);
 									}
@@ -708,32 +652,69 @@
 										}
 									}
 									for(var i=0; i<markSpans.length; i++) {
+										var rows = markSpans[i].getElementsByTagName("tr");
+										var groupSymbol = rows[0].getElementsByTagName("td")[2];
+										while(groupSymbol.firstChild) { groupSymbol.removeChild(groupSymbol.lastChild); }
+
 										if(enabledTaggers.length == 1) {
 											markSpans[i].setAttribute("data-split", "true");
 										}
 										else {
 											var base = null;
+											var eval = null;
 											var annotatorSpans = markSpans[i].getElementsByClassName("annotator");
 											// TODO: fix bug if wrongly tagged by second annotator
 											
-											var optCombine = document.getElementById("optCombine");
-											var combineAttribute = "data-" + optCombine.options[optCombine.selectedIndex].value;
-											for(var j=0; j<annotators.length; j++) {
-												if(isEnabled("" + j)) {
-													// always split highlighted spans
-													if(annotatorSpans[j-1].classList.contains("highlight")) {
-														base = "split";
-														break;
+											/* used to check whether some values have the same value */
+											function accumulate(lastVal, newVal, disagreementValue) {
+												if( lastVal == disagreementValue || (lastVal == null ? newVal : lastVal) != newVal) {
+													return disagreementValue;
+												}
+												else {
+													return lastVal || newVal;
+												}
+											}
+											var showConflicts = document.getElementById("showConflicts");
+											if(!showConflicts.checked) {
+												base = "split";
+											}
+											else {
+												var combineAttribute = "data-entity";
+												for(var j=0; j<annotators.length; j++) {
+													if(isEnabled("" + j)) {
+														// always split highlighted spans
+														if(highlightMode) {
+															if(annotatorSpans[j].classList.contains("highlight")) {
+																base = "split";
+															}
+														}
+														else {
+															var val = annotatorSpans[j].getAttribute(combineAttribute) || "";
+															base = accumulate(base, val, "split");
+															if(j>0) {
+																var val = annotatorSpans[j].getAttribute("data-eval") || "";
+																eval = accumulate(eval, val, "split");
+															}
+														}
 													}
-													var val = annotatorSpans[j-1].getAttribute(combineAttribute) || "";
-													if( (base == null ? val : base) != val) {
-														base = "split";
-														break;
-													}
-													base = base || val;
 												}
 											}
 											markSpans[i].setAttribute("data-split", base == "split");
+											if(eval != "split") {
+												// create symbol
+												var toolTipText, index, dest, eval;
+												toolTipText = evalToSymbol(eval);
+												
+												// symbol after each annotator's mention
+												groupSymbol = initElement(groupSymbol, 'span', {
+													class:"grouped-symbols"});
+												groupSymbol = initElement(groupSymbol, 'span', {
+													class:"symbols"});
+												initElement(groupSymbol,'span',{
+													class:"symbol" 
+													}, toolTipText);
+											}
+											
 										}
 									}
 								}
@@ -808,13 +789,20 @@
 										}
 										for(var j=0; j<annotatorSpans.length; j++) {
 											var annotatorSpan = annotatorSpans[j];
-											annotatorSpan.classList.add("highlight");
-											if(ancestorWithClass(annotatorSpan, "mark").getAttribute("data-entity0") == goldEntity) {
+											var highlight = annotatorSpan.getAttribute("data-entity") == thisEntity;
+											var markSpan = ancestorWithClass(annotatorSpan, "mark");
+											if(markSpan.getAttribute("data-entity0") == goldEntity &&
+													annotatorSpan.getAttribute("data-index") == "0") {
 												annotatorSpan.classList.add("rightchain");
+												highlight = true;
 											}
 
 											if(annotatorSpan.getAttribute("data-entity") == thisEntity && ancestor.getAttribute("data-eval") != "correct") {
 												annotatorSpan.classList.add("wrongchain");
+												highlight = true;
+											}
+											if(highlight) {
+												annotatorSpan.classList.add("highlight");
 											}
 										}
 									}
@@ -873,58 +861,44 @@
 								}
 							}
 
+							function evalToSymbol(eval) {
+								var result = "";
+								switch(eval) {
+									// TODO: symbols
+									case "correct":
+										result = "&#x2714;"; // ✔
+										break;
+									case "toomuch":
+										result = "&#x2718;"; // TODO: another symbol?
+										break;
+									case "missing":
+										result = "&#x2718;"; //"&quest;"; // ❓
+										break;
+									case "wrong":
+										result= "&#x2718;"; // ✘
+										break;
+								}
+								return result;
+							}
+
 							// add symbols
 							for(i=0; i < markSpans.length; i++) {
-								var split = markSpans[i].getAttribute("data-split");
 								var children = markSpans[i].getElementsByClassName("annotator");
-								
-								var anchor = document.createElement("span");
-								anchor.classList.add("grouped-symbols");
-								var firstFontNode = markSpans[i].getElementsByTagName("td")[2].getElementsByClassName("collapse")[0];
-								
-								var parent = document.createElement("span");
-								parent.classList.add("symbols");
-								parent.appendChild(anchor);
-								firstFontNode.appendChild(parent);
-								
-								for(var j=0; j<children.length; j++) {
+								for(var j=1; j<children.length; j++) {
 									// create symbol
 									var toolTipText, index, dest, eval;
 									eval = children[j].getAttribute("data-eval");
-									switch(eval) {
-										// TODO: symbols
-										case "correct":
-											toolTipText = "&#x2714;"; // ✔
-											break;
-										case "toomuch":
-											toolTipText = "&#x2718;"; // TODO: another symbol?
-											break;
-										case "missing":
-											toolTipText = "&quest;"; //"&#x2753;"; // ❓
-											break;
-										case "wrong":
-											toolTipText= "&#x2718;"; // ✘
-											break;
-										default:
-											toolTipText = "";
-									}
+									toolTipText = evalToSymbol(eval);
+									
 									index = children[j].getAttribute("data-index");
 									// symbol after each annotator's mention
 									dest = children[j].getElementsByTagName("td")[2];
 									
-									if(!isUndefined(dest)) {
-										if(j != 0) {
-											dest = initElement(dest, 'span', {
-												class:"symbols"});
-										} else {
-											initElement(parent,'span',{
-												class:"symbol single-symbol", 
-												}, toolTipText);
-										}
-										initElement(dest,'span',{
-											class:"symbol single-symbol", 
-											"data-index":index}, toolTipText);
-									}
+									dest = initElement(dest, 'span', {
+										class:"symbols"});
+									initElement(dest,'span',{
+										class:"symbol single-symbol", 
+										"data-index":index}, toolTipText);
 								}
 							}
 						}
@@ -948,8 +922,13 @@
 			<xsl:if test="@id=''">Article </xsl:if>
 				<xsl:value-of select="@id"/>
 			</h2>
-			<div>
-				<xsl:apply-templates />
+			<div class="article grail-body" > <!-- style="line-height: 100%" -->
+				<div class="grail-content">
+				<xsl:apply-templates select="content"/>
+				</div>
+				<!-- <div class="grail-nav">
+				<xsl:apply-templates select="entity-list"/>
+				</div> -->
 			</div>
 		</xsl:template>
 
@@ -994,18 +973,12 @@
 					<xsl:attribute name="data-{name()}"><xsl:value-of select="."/></xsl:attribute>
 				</xsl:for-each>
 				<table class="overlay">
-					<tr class="combined">
+					<tr>
 						<!-- opening chain number -->
-						<td>
-							<span class="collapse">
-								<xsl:call-template name="chainImpl">
-									<xsl:with-param name="chain0" select="@chain-before0" />
-								</xsl:call-template>
-							</span>
-						</td>
+						<td></td>
 
 						<!-- text -->
-						<td>
+						<td style="background-color: white;text-align: center;text-shadow: .5px 0px .0px, -.5px 0px .0px;">
 							<span class="collapse">
 								<xsl:value-of select="."/>
 							</span>
@@ -1015,15 +988,35 @@
 						<td><span class="collapse"/></td>
 
 						<!-- closing chain number -->
+						<td></td>
+					</tr>
+					<tr class="annotator">
+						<xsl:attribute name="data-eval">correct</xsl:attribute>
+						<xsl:attribute name="data-index">0</xsl:attribute>
+						<xsl:attribute name="data-entity"><xsl:value-of select="@entity0"/></xsl:attribute>
+						<xsl:for-each select='@*'>
+							<xsl:attribute name="data-{name()}"><xsl:value-of select="."/></xsl:attribute>
+						</xsl:for-each>
+
+						<td><xsl:call-template name="chainImpl">
+								<xsl:with-param name="chain" select="@chain-before0" />
+							</xsl:call-template>
+						</td>
+						<td class="textColumn entity" style="background-color: white; ">G: <xsl:value-of select="@short0" /></td>
+						<td></td>
 						<td>
-							<span class="collapse">
 								<xsl:call-template name="chainImpl">
-									<xsl:with-param name="chain0" select="@chain-after0" />
+									<xsl:with-param name="chain" select="@chain-after0" />
 								</xsl:call-template>
-							</span>
 						</td>
 					</tr>
 					<xsl:apply-templates select="*"/>
+					<tr class="linespacer">
+						<td></td>
+						<td class="noselect">&#160;</td>
+						<td></td>
+						<td></td>
+					</tr>
 				</table>
 			</span>
 		</xsl:template>
@@ -1037,20 +1030,20 @@
 
 			<td>
 				<xsl:call-template name="chainImpl">
-					<xsl:with-param name="chain0" select="../@chain-before0" />
 					<xsl:with-param name="chain" select="@chain-before" />
 				</xsl:call-template>
 			</td>
 
-			<td>
-				<xsl:value-of select=".." />
+			<td class="textColumn entity">
+					<!-- A<xsl:value-of select="@index" />:  -->
+					<xsl:value-of select="@short" />
+				<!--<xsl:value-of select=".." />-->
 			</td>
 
 			<td/>
 
 			<td>
 				<xsl:call-template name="chainImpl">
-					<xsl:with-param name="chain0" select="../@chain-after0" />
 					<xsl:with-param name="chain" select="@chain-after" />
 				</xsl:call-template>
 			</td>
@@ -1058,28 +1051,28 @@
 			</tr>
 		</xsl:template>
 
-		 
-	
-
 		<xsl:template name="chainImpl">
-			<xsl:param name="chain0"/>
 			<xsl:param name="chain"/>
 
-			<xsl:if test="$chain0 != '' or $chain != ''">
-				<span class="supsub">
-					<span class="superscript">
-						<xsl:value-of select="$chain0" />
-						<xsl:if test="not($chain0)">&#160;</xsl:if>
-					</span>
-					<span class="subscript">
-						<xsl:value-of select="$chain" />
-						<xsl:if test="not($chain)">&#160;</xsl:if>
-					</span>
+			<xsl:if test="$chain != ''">
+				<span class="chain">
+					<xsl:value-of select="$chain" />
+					<xsl:if test="not($chain)">&#160;</xsl:if>
 				</span>
 			</xsl:if>
-
 		</xsl:template>
 
+		<xsl:template match="entity-list">
+			<div class="entityList" style="display:none;">
+				<b>Entities:</b><br/>
+				<xsl:apply-templates />
+			</div>
+		</xsl:template>
+		<xsl:template match="entity-list/entry">
+			<div>
+				<span class="entity"><xsl:value-of select="." /></span><br/>
+			</div>
+		</xsl:template>
 
 		<xsl:template match="evaluation">
 			<span class="eval">
@@ -1101,55 +1094,59 @@
 	<annotator id='2' file='doc/examples/tutorial-2.xml'/>
 </annotators>
 <metrics>
-<annotator id='0'>
-    <metric name='bcub (macro)' recall='0.41666666' precision='0.41666666'/>
-    <metric name='bcub (micro)' recall='0.71428573' precision='0.71428573'/>
-    <metric name='ceafe (macro)' recall='0.4166667' precision='0.4166667'/>
-    <metric name='ceafe (micro)' recall='0.7777778' precision='0.7777778'/>
-    <metric name='ceafm (macro)' recall='0.41666666' precision='0.41666666'/>
-    <metric name='ceafm (micro)' recall='0.71428573' precision='0.71428573'/>
+<annotator id='1'>
+    <metric name='bcub (macro)' recall='0.16666667' precision='0.16666667'/>
+    <metric name='bcub (micro)' recall='0.6666667' precision='0.6666667'/>
+    <metric name='ceafe (macro)' recall='0.16666667' precision='0.16666667'/>
+    <metric name='ceafe (micro)' recall='0.6666667' precision='0.6666667'/>
+    <metric name='ceafm (macro)' recall='0.16666667' precision='0.16666667'/>
+    <metric name='ceafm (micro)' recall='0.6666667' precision='0.6666667'/>
     <metric name='muc (macro)' recall='0.1875' precision='0.1875'/>
     <metric name='muc (micro)' recall='0.75' precision='0.75'/>
 </annotator>
-<annotator id='1'>
-    <metric name='bcub (macro)' recall='0.42708334' precision='0.5'/>
-    <metric name='bcub (micro)' recall='0.75' precision='1.0'/>
-    <metric name='ceafe (macro)' recall='0.48214287' precision='0.48214287'/>
-    <metric name='ceafe (micro)' recall='0.95238096' precision='0.95238096'/>
-    <metric name='ceafm (macro)' recall='0.45833334' precision='0.5'/>
-    <metric name='ceafm (micro)' recall='0.85714287' precision='1.0'/>
+<annotator id='2'>
+    <metric name='bcub (macro)' recall='0.17708333' precision='0.25'/>
+    <metric name='bcub (micro)' recall='0.7083333' precision='1.0'/>
+    <metric name='ceafe (macro)' recall='0.23214285' precision='0.23214285'/>
+    <metric name='ceafe (micro)' recall='0.9285714' precision='0.9285714'/>
+    <metric name='ceafm (macro)' recall='0.20833333' precision='0.25'/>
+    <metric name='ceafm (micro)' recall='0.8333333' precision='1.0'/>
     <metric name='muc (macro)' recall='0.1875' precision='0.25'/>
     <metric name='muc (micro)' recall='0.75' precision='1.0'/>
 </annotator>
 </metrics>
   <article id='Tutorial'>
-Welcome to the Jecca tutorial. Let&apos;s assume we have used two annotators to annotate the current text. Have a look at the words in boldface like <mark  split='false' entity0='Obama; 1; Barack_Obama' chain-before0='(1' chain-after0='1)'><annotator index='1' entity='Barack_Obama' eval='correct' chain-before='(1' chain-after='1)'/>
-<annotator index='2' entity='Barack_Obama' eval='correct' chain-before='(1' chain-after='1)'/>
+<entity-list>
+<entry>Barack_Obama</entry>
+<entry>Michelle_Obama</entry>
+</entity-list>
+<content>Welcome to the Casie tutorial. Let&apos;s assume we have used two annotators to annotate the current text. Have a look at the words in boldface like <mark  split='false' entity0='Barack_Obama' short0='Barack_Oba…' chain-before0='(' chain-after0=')'><annotator index='1' entity='Barack_Obama' short='Barack_Oba…' eval='correct' chain-before='(' chain-after=')'/>
+<annotator index='2' entity='Barack_Obama' short='Barack_Oba…' eval='correct' chain-before='(' chain-after=')'/>
 Obama</mark>
- referring to the president of the United States of America. When you move over it with your mouse cursor, you can see &quot;Obama&quot; twice, the first line corresponds to the first annotator and the second line to the second annotator. Both annotators got it right, so Obama appears in green. But <mark  split='true' entity0='Obama; 2; Michelle_Obama' chain-before0='(2' chain-after0='2)'><annotator index='1' entity='Barack_Obama' eval='wrong' chain-before='(1' chain-after='1)'/>
-<annotator index='2' eval='missing'/>
+ referring to the president of the United States of America. When you move over it with your mouse cursor, you can see &quot;Barack_Oba...&quot; appearing twice. The first supplementary line corresponds to the first annotator and the second one to the second annotator. Both annotators got it right, so &quot;Barack_Oba...&quot; appears in green. But <mark  split='true' entity0='Michelle_Obama' short0='Michelle_O…' chain-before0='(' chain-after0=')'><annotator index='1' entity='Barack_Obama' short='Barack_Oba…' eval='wrong' chain-before='(' chain-after=')'/>
+<annotator index='2' short='[none]' eval='missing'/>
 Obama</mark>
- may also refer to <mark  split='false' entity0='Obama; 1; Barack_Obama' chain-before0='(1,(2' chain-after0='1)'><annotator index='1' entity='Barack_Obama' eval='correct' chain-before='(1,(2' chain-after='1)'/>
-<annotator index='2' entity='Barack_Obama' eval='correct' chain-before='(1,(2' chain-after='1)'/>
+ may also refer to <mark  split='false' entity0='Barack_Obama' short0='Barack_O…' chain-before0='((' chain-after0=')'><annotator index='1' entity='Barack_Obama' short='Barack_O…' eval='correct' chain-before='((' chain-after=')'/>
+<annotator index='2' entity='Barack_Obama' short='Barack_O…' eval='correct' chain-before='((' chain-after=')'/>
 his</mark>
-<mark  split='false' entity0='Obama; 2; Michelle_Obama' chain-before0='' chain-after0='2)'><annotator index='1' entity='Michelle_Obama' eval='correct' chain-before='' chain-after='2)'/>
-<annotator index='2' entity='Michelle_Obama' eval='correct' chain-before='' chain-after='2)'/>
+<mark  split='false' entity0='Michelle_Obama' short0='Michelle_O…' chain-before0='' chain-after0=')'><annotator index='1' entity='Michelle_Obama' short='Michelle_O…' eval='correct' chain-before='' chain-after=')'/>
+<annotator index='2' entity='Michelle_Obama' short='Michelle_O…' eval='correct' chain-before='' chain-after=')'/>
  wife</mark>
-. In this case &quot;Obama&quot; got duplicated, because the annotators produced different results for it. The first annotator got it wrong (red color) and the second hasn&apos;t found it at all (purple). Move your mouse on top of a mention and a tooltip will give you details about it. Click on the first line of &quot;<mark  split='true' entity0='Obama; 2; Michelle_Obama' chain-before0='(2' chain-after0='2)'><annotator index='1' entity='Barack_Obama' eval='wrong' chain-before='(1' chain-after='1)'/>
-<annotator index='2' entity='Michelle_Obama' eval='correct' chain-before='(2' chain-after='2)'/>
+. In this case the supplementary lines always appear, as at least one annotator has made a mistake. The first annotator got it wrong and the second hasn&apos;t found it at all, so both become marked in red. Move your mouse on top of a mention and a tooltip will give you details about it. Click on the third line of &quot;<mark  split='true' entity0='Michelle_Obama' short0='Michelle_Obama' chain-before0='(' chain-after0=')'><annotator index='1' entity='Barack_Obama' short='Barack_Obama' eval='wrong' chain-before='(' chain-after=')'/>
+<annotator index='2' entity='Michelle_Obama' short='Michelle_Obama' eval='correct' chain-before='(' chain-after=')'/>
 Michelle Obama</mark>
-&quot; to mark all the spans annotated with <mark  split='false' entity0='Obama; 2; Michelle_Obama' chain-before0='(2' chain-after0='2)'><annotator index='1' entity='Michelle_Obama' eval='correct' chain-before='(2' chain-after='2)'/>
-<annotator index='2' entity='Michelle_Obama' eval='correct' chain-before='(2' chain-after='2)'/>
+&quot; to mark all the spans annotated with <mark  split='false' entity0='Michelle_Obama' short0='Michelle…' chain-before0='(' chain-after0=')'><annotator index='1' entity='Michelle_Obama' short='Michelle…' eval='correct' chain-before='(' chain-after=')'/>
+<annotator index='2' entity='Michelle_Obama' short='Michelle…' eval='correct' chain-before='(' chain-after=')'/>
 her</mark>
-. You can see in green the &quot;chain&quot; where the underlined span belongs to, and in red the chain to which it was wrongly attributed. Click on the underlined span or a span without a mention to go back to the normal mode.
+. Click on a highlighted span or a span without a mention to go back to the normal mode.</content>
 <metrics>
-<annotator id='0'>
+<annotator id='1'>
     <metric name='bcub' recall='0.6666667' precision='0.6666667'/>
     <metric name='ceafm' recall='0.6666667' precision='0.6666667'/>
     <metric name='muc' recall='0.75' precision='0.75'/>
     <metric name='ceafe' recall='0.6666667' precision='0.6666667'/>
 </annotator>
-<annotator id='1'>
+<annotator id='2'>
     <metric name='bcub' recall='0.7083333' precision='1.0'/>
     <metric name='ceafm' recall='0.8333333' precision='1.0'/>
     <metric name='muc' recall='0.75' precision='1.0'/>
@@ -1158,63 +1155,58 @@ her</mark>
 </metrics>
   </article>
   <article id='Options'>
-Jecca can combine mentions either by same color or same entity. Take for example &quot;<mark  split='false' entity0='bow; 1; bow_and_arrow' chain-before0='(1' chain-after0='1)'><annotator index='1' entity='violin_bow' eval='wrong' chain-before='(2' chain-after='2)'/>
-<annotator index='2' entity='bow_and_stern_of_a_ship' eval='wrong' chain-before='(2' chain-after='2)'/>
-bow</mark>
-&quot;, a homonym with several meanings. Both annotators misinterpreted what the author meant with this word, because he didn&apos;t put it in context. By default, Jecca combines mentions by color. Thus, since both annotator got it wrong, &quot;bow&quot; appears only once. However the annotators chose different (wrong) entities. The option &quot;Combine same entities&quot; makes Jecca duplicate the aforementioned &quot;bow&quot;, to visualize the fact that the annotators do not agree.  Click on &quot;Show symbols&quot; to display a ✔, ✘ or ? symbol at the end of the spans for correct, wrong or missing annotations. When you want information about overlapping mentions, activate the &quot;Show entity numbers&quot; option. Mentions with the same entities get the same number, where &quot;(&quot; indicates the start and &quot;)&quot; indicates the end. The upper number of a span indicates the gold standard entity and the number at the bottom the one of the annotator.
+<entity-list>
+</entity-list>
+<content>Casie combines mentions if all of the activated annotators got it right. To show all annotations, disable the &quot;conflicts&quot; option.  Click on &quot;Show symbols&quot; to display a ✔ or a ✘ at the end of the spans for correct or wrong annotations. When you want information about overlapping mentions, activate the &quot;span limits&quot; option. Parentheses mark the borders of the annotated spans, i.e. &quot;(&quot; indicates the start and &quot;)&quot; indicates the end.</content>
 <metrics>
-<annotator id='0'>
+<annotator id='1'>
     <metric name='bcub' recall='0.6666667' precision='0.6666667'/>
     <metric name='ceafm' recall='0.6666667' precision='0.6666667'/>
     <metric name='muc' recall='0.75' precision='0.75'/>
     <metric name='ceafe' recall='0.6666667' precision='0.6666667'/>
 </annotator>
-<annotator id='1'>
+<annotator id='2'>
     <metric name='bcub' recall='0.7083333' precision='1.0'/>
     <metric name='ceafm' recall='0.8333333' precision='1.0'/>
     <metric name='muc' recall='0.75' precision='1.0'/>
     <metric name='ceafe' recall='0.9285714' precision='0.9285714'/>
 </annotator>
-<annotator id='2'>
-    <metric name='bcub' recall='1.0' precision='1.0'/>
-    <metric name='ceafm' recall='1.0' precision='1.0'/>
-    <metric name='muc' recall='0.0' precision='0.0'/>
-    <metric name='ceafe' recall='1.0' precision='1.0'/>
-</annotator>
 <annotator id='3'>
-    <metric name='bcub' recall='1.0' precision='1.0'/>
-    <metric name='ceafm' recall='1.0' precision='1.0'/>
+    <metric name='bcub' recall='0.0' precision='0.0'/>
+    <metric name='ceafm' recall='0.0' precision='0.0'/>
     <metric name='muc' recall='0.0' precision='0.0'/>
-    <metric name='ceafe' recall='1.0' precision='1.0'/>
+    <metric name='ceafe' recall='0.0' precision='0.0'/>
+</annotator>
+<annotator id='4'>
+    <metric name='bcub' recall='0.0' precision='0.0'/>
+    <metric name='ceafm' recall='0.0' precision='0.0'/>
+    <metric name='muc' recall='0.0' precision='0.0'/>
+    <metric name='ceafe' recall='0.0' precision='0.0'/>
 </annotator>
 </metrics>
   </article>
   <article id='Annotators'>
-Deselect &quot;Anno 2&quot; to hide the second annotator. You can still click on mentions to highlight the corresponding chains. Jecca recalculates which mentions to show in the split/compact view. If the users deselects all annotators, Jecca highlights the gold standard mentions.
+<entity-list>
+</entity-list>
+<content>Deselect &quot;annotator 2&quot; to hide the second annotator. You can still click on mentions to highlight the corresponding chains. Casie recalculates which mentions to show in the split/compact view. You can also show the gold standard.</content>
 <metrics>
-<annotator id='0'>
+<annotator id='1'>
     <metric name='bcub' recall='0.6666667' precision='0.6666667'/>
     <metric name='ceafm' recall='0.6666667' precision='0.6666667'/>
     <metric name='muc' recall='0.75' precision='0.75'/>
     <metric name='ceafe' recall='0.6666667' precision='0.6666667'/>
 </annotator>
-<annotator id='1'>
+<annotator id='2'>
     <metric name='bcub' recall='0.7083333' precision='1.0'/>
     <metric name='ceafm' recall='0.8333333' precision='1.0'/>
     <metric name='muc' recall='0.75' precision='1.0'/>
     <metric name='ceafe' recall='0.9285714' precision='0.9285714'/>
 </annotator>
-<annotator id='2'>
-    <metric name='bcub' recall='1.0' precision='1.0'/>
-    <metric name='ceafm' recall='1.0' precision='1.0'/>
-    <metric name='muc' recall='0.0' precision='0.0'/>
-    <metric name='ceafe' recall='1.0' precision='1.0'/>
-</annotator>
 <annotator id='3'>
-    <metric name='bcub' recall='1.0' precision='1.0'/>
-    <metric name='ceafm' recall='1.0' precision='1.0'/>
+    <metric name='bcub' recall='0.0' precision='0.0'/>
+    <metric name='ceafm' recall='0.0' precision='0.0'/>
     <metric name='muc' recall='0.0' precision='0.0'/>
-    <metric name='ceafe' recall='1.0' precision='1.0'/>
+    <metric name='ceafe' recall='0.0' precision='0.0'/>
 </annotator>
 <annotator id='4'>
     <metric name='bcub' recall='0.0' precision='0.0'/>
@@ -1228,34 +1220,36 @@ Deselect &quot;Anno 2&quot; to hide the second annotator. You can still click on
     <metric name='muc' recall='0.0' precision='0.0'/>
     <metric name='ceafe' recall='0.0' precision='0.0'/>
 </annotator>
+<annotator id='6'>
+    <metric name='bcub' recall='0.0' precision='0.0'/>
+    <metric name='ceafm' recall='0.0' precision='0.0'/>
+    <metric name='muc' recall='0.0' precision='0.0'/>
+    <metric name='ceafe' recall='0.0' precision='0.0'/>
+</annotator>
 </metrics>
   </article>
   <article id='Evaluation'>
-Jecca shows all available evaluation metrics in the drop-down list. Choose your preferred metric to see the computed precision and recall. Jecca highlights the best annotator for recall and precision respectively.
+<entity-list>
+</entity-list>
+<content>Casie shows all available evaluation metrics in the drop-down list. Choose your preferred metric to see the computed precision and recall. Casie highlights the best annotator for recall and precision respectively.</content>
 <metrics>
-<annotator id='0'>
+<annotator id='1'>
     <metric name='bcub' recall='0.6666667' precision='0.6666667'/>
     <metric name='ceafm' recall='0.6666667' precision='0.6666667'/>
     <metric name='muc' recall='0.75' precision='0.75'/>
     <metric name='ceafe' recall='0.6666667' precision='0.6666667'/>
 </annotator>
-<annotator id='1'>
+<annotator id='2'>
     <metric name='bcub' recall='0.7083333' precision='1.0'/>
     <metric name='ceafm' recall='0.8333333' precision='1.0'/>
     <metric name='muc' recall='0.75' precision='1.0'/>
     <metric name='ceafe' recall='0.9285714' precision='0.9285714'/>
 </annotator>
-<annotator id='2'>
-    <metric name='bcub' recall='1.0' precision='1.0'/>
-    <metric name='ceafm' recall='1.0' precision='1.0'/>
-    <metric name='muc' recall='0.0' precision='0.0'/>
-    <metric name='ceafe' recall='1.0' precision='1.0'/>
-</annotator>
 <annotator id='3'>
-    <metric name='bcub' recall='1.0' precision='1.0'/>
-    <metric name='ceafm' recall='1.0' precision='1.0'/>
+    <metric name='bcub' recall='0.0' precision='0.0'/>
+    <metric name='ceafm' recall='0.0' precision='0.0'/>
     <metric name='muc' recall='0.0' precision='0.0'/>
-    <metric name='ceafe' recall='1.0' precision='1.0'/>
+    <metric name='ceafe' recall='0.0' precision='0.0'/>
 </annotator>
 <annotator id='4'>
     <metric name='bcub' recall='0.0' precision='0.0'/>
@@ -1276,6 +1270,12 @@ Jecca shows all available evaluation metrics in the drop-down list. Choose your 
     <metric name='ceafe' recall='0.0' precision='0.0'/>
 </annotator>
 <annotator id='7'>
+    <metric name='bcub' recall='0.0' precision='0.0'/>
+    <metric name='ceafm' recall='0.0' precision='0.0'/>
+    <metric name='muc' recall='0.0' precision='0.0'/>
+    <metric name='ceafe' recall='0.0' precision='0.0'/>
+</annotator>
+<annotator id='8'>
     <metric name='bcub' recall='0.0' precision='0.0'/>
     <metric name='ceafm' recall='0.0' precision='0.0'/>
     <metric name='muc' recall='0.0' precision='0.0'/>
