@@ -2,36 +2,30 @@
 <?xml-stylesheet type='text/xsl' href='trafo.xsl' ?>
 <articles>
 	<article id='Tutorial'>
-		Welcome to the Jecca tutorial. Let's assume we have used two annotators to annotate the current text.
+		Welcome to the Casie tutorial. Let's assume we have used two annotators to annotate the current text.
 		Have a look at the words in boldface like <mark entity="Barack_Obama">Obama</mark> referring to the president of the United States of America. 
-		When you move over it with your mouse cursor, you can see "Obama" twice, the first line corresponds to the first annotator and the second line to the second annotator.
-		Both annotators got it right, so Obama appears in green.
+		When you move over it with your mouse cursor, you can see "Barack_Oba..." appearing twice. The first supplementary line corresponds to the first annotator and the second one to the second annotator.
+		Both annotators got it right, so "Barack_Oba..." appears in green.
 		But Obama may also refer to <mark entity="Michelle_Obama"><mark entity="Barack_Obama">his</mark> wife</mark>.
-		In this case "Obama" got duplicated, because the annotators produced different results for it.
-		The first annotator got it wrong (red color) and the second hasn't found it at all (purple).
+		In this case the supplementary lines always appear, as at least one annotator has made a mistake.
+		The first annotator got it wrong and the second hasn't found it at all, so both become marked in red.
 		Move your mouse on top of a mention and a tooltip will give you details about it.
-		Click on the first line of "<mark entity="Michelle_Obama">Michelle Obama</mark>" to mark all the spans annotated with <mark entity="Michelle_Obama">her</mark>.
-		You can see in green the "chain" where the underlined span belongs to, and in red the chain to which it was wrongly attributed.
-		Click on the underlined span or a span without a mention to go back to the normal mode.
+		Click on the third line of "<mark entity="Michelle_Obama">Michelle Obama</mark>" to mark all the spans annotated with <mark entity="Michelle_Obama">her</mark>.
+		Click on a highlighted span or a span without a mention to go back to the normal mode.
 	</article>
 	<article id='Options'>
-		Jecca can combine mentions either by same color or same entity.
-		Take for example "<mark entity="bow_and_stern_of_a_ship">bow</mark>", a homonym with several meanings.
-		Both annotators misinterpreted what the author meant with this word, because he didn't put it in context.
-		By default, Jecca combines mentions by color. Thus, since both annotator got it wrong, "bow" appears only once. However the annotators chose different (wrong) entities.
-		The option "Combine same entities" makes Jecca duplicate the aforementioned "bow", to visualize the fact that the annotators do not agree.
+		Casie combines mentions if all of the activated annotators got it right. To show all annotations, disable the "conflicts" option.
 		<br/>
-		Click on "Show symbols" to display a &#x2714;, &#x2718; or ? symbol at the end of the spans for correct, wrong or missing annotations.
-		When you want information about overlapping mentions, activate the "Show entity numbers" option.
-		Mentions with the same entities get the same number, where "(" indicates the start and ")" indicates the end.
-		The upper number of a span indicates the gold standard entity and the number at the bottom the one of the annotator.
+		Click on "Show symbols" to display a &#x2714; or a &#x2718; at the end of the spans for correct or wrong annotations.
+		When you want information about overlapping mentions, activate the "span limits" option.
+		Parentheses mark the borders of the annotated spans, i.e. "(" indicates the start and ")" indicates the end.
 	</article>
 	<article id="Annotators">
-		Deselect "Anno 2" to hide the second annotator. You can still click on mentions to highlight the corresponding chains. Jecca recalculates which mentions to show in the split/compact view. If the users deselects all annotators, Jecca highlights the gold standard mentions.
+		Deselect "annotator 2" to hide the second annotator. You can still click on mentions to highlight the corresponding chains. Casie recalculates which mentions to show in the split/compact view. You can also show the gold standard.
 	</article>
 	<article id='Evaluation'>
-		Jecca shows all available evaluation metrics in the drop-down list.
+		Casie shows all available evaluation metrics in the drop-down list.
 		Choose your preferred metric to see the computed precision and recall.
-		Jecca highlights the best annotator for recall and precision respectively.
+		Casie highlights the best annotator for recall and precision respectively.
 	</article>
 </articles>
