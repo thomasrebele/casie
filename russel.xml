@@ -1089,9 +1089,9 @@
 	</xsl:stylesheet>
 	
 	<annotators>
-	<annotator id='0' file='/home/tr/studium/phd/paper/2016-tagger-demo/demo/russel.xml'/>
-	<annotator id='1' file='/home/tr/studium/phd/paper/2016-tagger-demo/demo/russel-1.xml'/>
-	<annotator id='2' file='/home/tr/studium/phd/paper/2016-tagger-demo/demo/russel-2.xml'/>
+	<annotator id='0' file='doc/examples/russel.xml'/>
+	<annotator id='1' file='doc/examples/russel-1.xml'/>
+	<annotator id='2' file='doc/examples/russel-2.xml'/>
 </annotators>
 <metrics>
 <annotator id='1'>
@@ -1195,7 +1195,9 @@ his</mark>
  writings had a great effect on <mark  split='false' entity0='Bertrand_Russel' short0='Bertrand_Rus…' chain-before0='(' chain-after0=')'><annotator index='1' entity='Bertrand_Russel' short='Bertrand_Rus…' eval='correct' chain-before='(' chain-after=')'/>
 <annotator index='2' entity='Bertrand_Russel' short='Bertrand_Rus…' eval='correct' chain-before='(' chain-after=')'/>
 Russell</mark>
-&apos;s life.</content>
+&apos;s life.
+
+ [Source: https://en.wikipedia.org/wiki/Bertrand_Russell]</content>
 <metrics>
 <annotator id='1'>
     <metric name='bcub' recall='0.87272733' precision='0.9142858'/>
