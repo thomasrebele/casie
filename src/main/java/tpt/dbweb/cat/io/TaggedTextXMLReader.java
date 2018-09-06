@@ -38,7 +38,7 @@ import tpt.dbweb.cat.datatypes.TaggedText;
 import tpt.dbweb.cat.datatypes.TextSpan;
 import tpt.dbweb.cat.tools.Utility;
 
-public class TaggedTextXMLReader {
+public class TaggedTextXMLReader implements TaggedTextReader {
 
   private final static Logger log = LoggerFactory.getLogger(TaggedTextXMLReader.class);
 

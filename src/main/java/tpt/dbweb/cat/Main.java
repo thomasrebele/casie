@@ -49,12 +49,33 @@ public class Main {
   }
 
   public static void main(String[] args) throws IOException {
-    /*args = new String[] { "--out",
+    /*args = new String[] {
+        "--out",
         "doc/examples/russel-out.xml",
         "doc/examples/russel.xml",
         "doc/examples/russel-1.xml",
-        "doc/examples/russel-2.xml",
-    };*/
+        "doc/examples/russel-2.xml", };*/
+    args = new String[] {
+        "--out",
+        "doc/examples/tutorial-out.xml",
+        "doc/examples/tutorial.xml",
+        "doc/examples/tutorial-1.xml",
+        "doc/examples/tutorial-2.xml", };
+
+    /*args = new String[] {
+        "--out",
+        "/home/tr/studium/phd/paper/2016-tagger-demo/demo/russel-pos-out.xml",
+        //"doc/examples/russel-pos.xml",
+        "/home/tr/studium/phd/paper/2016-tagger-demo/demo/russel-pos-1.xml",
+        "/home/tr/studium/phd/paper/2016-tagger-demo/demo/russel-pos-1.xml",
+        "/home/tr/studium/phd/paper/2016-tagger-demo/demo/russel-pos-2.xml", };
+
+    args = new String[] {
+        "--out",
+        "/home/tr/studium/phd/paper/2016-tagger-demo/demo/russel-out.xml",
+        "/home/tr/studium/phd/paper/2016-tagger-demo/demo/russel.xml",
+        "/home/tr/studium/phd/paper/2016-tagger-demo/demo/russel-1.xml",
+        "/home/tr/studium/phd/paper/2016-tagger-demo/demo/russel-2.xml", };*/
 
     // parse options
     Options options = new Options();
@@ -102,4 +123,5 @@ public class Main {
     Compare.compare(options.compareOptions, cmp);
 
   }
+
 }
